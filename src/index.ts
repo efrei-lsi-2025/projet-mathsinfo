@@ -48,33 +48,36 @@ async function readAndParseData() {
       if (station_1) {
         station_1.adjacentStations.push(station_2);
         station_1.adjacentInterstations.push(interstations[interstations.length - 1]);
+      } else {
+        console.log(`Station ${linesArray[i].slice(2).split(" ")[0]} not found.`);
       }
 
       if (station_2) {
         station_2.adjacentStations.push(station_1);
         station_2.adjacentInterstations.push(interstations[interstations.length - 1]);
+      } else {
+        console.log(`Station ${linesArray[i].slice(2).split(" ")[1]} not found.`);
       }
     }
   }
 
-  // example data from pospoints: 744;811;Bibliothèque@François@Mitterand
   let positions = await fs.readFileSync("./docs/pospoints.txt", "utf8");
   let positionsArray = positions.split("\n");
   for (let i in positionsArray) {
     let lineSplit = positionsArray[i].split(";");
-    let station = stations.find(
+    let stationsFound = stations.filter(
       (s) => s.nom === lineSplit[2].replace(/@/g, " ").trim()
     );
-    if (station) {
-      station.lat = parseInt(lineSplit[0]);
-      station.lng = parseInt(lineSplit[1]);
+    for(let j in stationsFound){
+      stationsFound[j].lat = parseInt(lineSplit[0]);
+      stationsFound[j].lng = parseInt(lineSplit[1]);
     }
   }
 }
 
 async function startCanvasAndServer() {
   const image = await canvasLibrary.loadImage("./docs/metrof_r.png");
-  canvasCtx.globalAlpha = 0.4;
+  canvasCtx.globalAlpha = 0.2;
   canvasCtx.drawImage(image, 0, 0, 987, 952);
   canvasCtx.globalAlpha = 1;
 
@@ -120,7 +123,19 @@ async function main() {
   });
 
   router.get("/stations", (req: any, res: any) => {
-    res.send(stations);
+    // stations without adjacentInterstations and adjacentStations
+    let stationsWithoutAdjacent = stations.map((s) => {
+      return {
+        num: s.num,
+        nom: s.nom,
+        ligne: s.ligne,
+        terminus: s.terminus,
+        branchement: s.branchement,
+        lat: s.lat,
+        lng: s.lng,
+      };
+    });
+    res.send(stationsWithoutAdjacent);
   });
 
   router.get("/interstations", (req: any, res: any) => {

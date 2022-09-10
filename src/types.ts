@@ -4,6 +4,8 @@ export type Station = {
   ligne: number;
   terminus: boolean;
   branchement: number;
+  lat?: number;
+  lng?: number;
 };
 
 export type Interstation = {

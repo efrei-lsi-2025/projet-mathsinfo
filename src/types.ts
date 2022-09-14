@@ -6,12 +6,21 @@ export type Station = {
   branchement: number;
   lat?: number;
   lng?: number;
-  adjacentStations: Station[];
-  adjacentInterstations: Interstation[];
+  adjacentStations: AdjacentStation[];
+};
+
+export type AdjacentStation = {
+  time: number;
+  station: Station;
 };
 
 export type Interstation = {
   station_1?: Station;
   station_2?: Station;
-  temps: number;
+  time: number;
+}
+
+export type ResultatDijkstra = {
+  path: Station[];
+  time: number;
 }

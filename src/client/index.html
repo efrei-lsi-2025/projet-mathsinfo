@@ -1,0 +1,102 @@
+<html>
+  <head>
+    <title>Itinéraire RATP - Projet Maths Info</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
+    />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+      .itineraire {
+        display: flex;
+        flex-direction: row;
+        gap: 30px;
+      }
+
+      .itineraire form {
+        flex: 0.4;
+        width: 100%;
+      }
+
+      .itineraire img {
+        border-radius: 10px;
+        flex: 0.7;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <h1>Itinéraire RATP - Projet Maths Info</h1>
+      <div class="itineraire">
+        <form>
+          <label for="start">Départ</label>
+          <select id="start" v-model="start">
+            <option v-for="station in stations" :value="station.num">
+              {{ station.nom }} (Ligne {{ station.ligne }})
+            </option>
+          </select>
+          <label for="end">Arrivée</label>
+          <select id="end" v-model="end">
+            <option v-for="station in stations" :value="station.num">
+              {{ station.nom }} (Ligne {{ station.ligne }})
+            </option>
+          </select>
+          <button type="button" @click="search">Rechercher</button>
+          <p>
+            <strong>Temps estimé:</strong> {{ timeString }} minutes
+            <p v-for="station in path" :key="station.num">
+              <img :src="`/icons/${station.ligne}.png`" style="width: 24px; height: 24px;"> {{ station.nom }}
+            </p>
+          </p>
+        </form>
+        <img :src="map" />
+      </div>
+    </main>
+  </body>
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          stations: [],
+          start: null,
+          end: null,
+          map: "/api/canvas",
+          path: [],
+          time: null
+        };
+      },
+      mounted() {
+        this.getStations();
+      },
+      methods: {
+        async getStations() {
+          const response = await fetch("api/stations");
+          const data = await response.json();
+          this.stations = data;
+        },
+        async search() {
+          const response = await fetch("api/path/" + this.start + "/" + this.end);
+          const data = await response.json();
+          this.map = data.canvas;
+          this.time = data.time;
+          this.path = data.path;
+        }
+      },
+      computed: {
+        timeString() {
+            const h = Math.floor(this.time / 3600).toString().padStart(2,'0'),
+                  m = Math.floor(this.time % 3600 / 60).toString().padStart(2,'0'),
+                  s = Math.floor(this.time % 60).toString().padStart(2,'0');
+            
+            return `${h}:${m}:${s}`;
+        }
+      }
+    }).mount("main");
+  </script>
+</html>

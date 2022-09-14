@@ -277,7 +277,7 @@ async function main() {
         lat: s.lat,
         lng: s.lng,
         adjacentStations: s.adjacentStations.map(
-          (s) => s.station.nom + " - " + s.station.ligne
+          (s) => { return { nom: s.station.nom, ligne: s.station.ligne, correspondance: s.time } }
         ),
       };
     });

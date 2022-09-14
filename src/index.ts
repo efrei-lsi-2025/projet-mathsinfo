@@ -29,28 +29,30 @@ async function readAndParseData() {
         adjacentStations: [],
       });
     } else {
+      let areteDetails = linesArray[i].slice(2).split(" ")
+
       let station_1 = stations.find(
-        (s) => s.num === parseInt(linesArray[i].slice(2).split(" ")[0])
+        (s) => s.num === parseInt(areteDetails[0])
       );
 
       let station_2 = stations.find(
-        (s) => s.num === parseInt(linesArray[i].slice(2).split(" ")[1])
+        (s) => s.num === parseInt(areteDetails[1])
       );
 
       interstations.push({
         station_1,
         station_2,
-        time: parseInt(linesArray[i].split(" ")[2]),
+        time: parseInt(areteDetails[2]),
       });
 
       if (station_1) {
         station_1.adjacentStations.push({
-          time: parseInt(linesArray[i].split(" ")[2]),
+          time: parseInt(areteDetails[2]),
           station: station_2,
         });
       } else {
         console.log(
-          `Station ${linesArray[i].slice(2).split(" ")[0]} not found.`
+          `Station ${areteDetails[0]} not found.`
         );
       }
 
@@ -61,7 +63,7 @@ async function readAndParseData() {
         });
       } else {
         console.log(
-          `Station ${linesArray[i].slice(2).split(" ")[1]} not found.`
+          `Station ${areteDetails[1]} not found.`
         );
       }
     }
@@ -277,7 +279,7 @@ async function main() {
         lat: s.lat,
         lng: s.lng,
         adjacentStations: s.adjacentStations.map(
-          (s) => { return { nom: s.station.nom, ligne: s.station.ligne, correspondance: s.time } }
+          (s) => { return { num: s.station.num, nom: s.station.nom, ligne: s.station.ligne, correspondance: s.time } }
         ),
       };
     });
@@ -307,7 +309,7 @@ async function main() {
           lat: s.lat,
           lng: s.lng,
           adjacentStations: s.adjacentStations.map(
-            (s) => s.station.nom + " - " + s.station.ligne
+            (s) => { return { num: s.station.num, nom: s.station.nom, ligne: s.station.ligne, correspondance: s.time } }
           ),
         };
       }),

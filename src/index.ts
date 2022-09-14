@@ -58,7 +58,7 @@ async function readAndParseData() {
 
       if (station_2) {
         station_2.adjacentStations.push({
-          time: parseInt(linesArray[i].split(" ")[2]),
+          time: parseInt(areteDetails[2]),
           station: station_1,
         });
       } else {

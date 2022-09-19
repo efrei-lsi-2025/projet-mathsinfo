@@ -193,7 +193,7 @@ async function drawCanvasPath(stationsToPathDraw: Station[]) {
   let newCanvasContext = newCanvas.getContext("2d");
 
   const image = await canvasLibrary.loadImage("./docs/metrof_r.png");
-  newCanvasContext.globalAlpha = 0.05;
+  newCanvasContext.globalAlpha = 0.07;
   newCanvasContext.drawImage(image, 0, 0, 987, 952);
   newCanvasContext.globalAlpha = 1;
 
@@ -207,6 +207,7 @@ async function drawCanvasPath(stationsToPathDraw: Station[]) {
       stationsToPathDraw[i].lng
     );
     newCanvasContext.lineTo(stationTo.lat, stationTo.lng);
+    newCanvasContext.lineWidth = 2;
     newCanvasContext.strokeStyle = getMetroColor(stationsToPathDraw[i].ligne);
     newCanvasContext.stroke();
   }

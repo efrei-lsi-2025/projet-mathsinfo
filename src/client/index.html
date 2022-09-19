@@ -20,7 +20,18 @@
         width: 100%;
       }
 
-      .itineraire img {
+      .itineraire .map {
+        position: relative;
+      }
+
+      .itineraire svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0.8;
+      }
+
+      .itineraire .map, .map img {
         border-radius: 10px;
         flex: 0.7;
         width: 100%;
@@ -53,7 +64,22 @@
             </p>
           </p>
         </form>
-        <img :src="map" />
+        <div class="map">
+          <img :src="map" />
+          <svg width="987" height="952" viewBox="23 0 1346 1341">
+            <g v-for="station in stations" :key="station.num">
+              <circle
+                :cx="station.lat"
+                :cy="station.lng"
+                r="3"
+                stroke="black"
+                stroke-width="1"
+                fill="white"
+                @click="selectStation(station)"
+              />
+            </g>
+          </svg>
+        </div>
       </div>
     </main>
   </body>
@@ -75,6 +101,17 @@
         this.getStations();
       },
       methods: {
+        selectStation(station) {
+          if (this.start === null) {
+            this.start = station.num;
+          } else if (this.end === null) {
+            this.end = station.num;
+            this.search();
+          } else {
+            this.start = station.num;
+            this.end = null;
+          }
+        },
         async getStations() {
           const response = await fetch("api/stations");
           const data = await response.json();

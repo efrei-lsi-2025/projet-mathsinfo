@@ -49,7 +49,7 @@
           <p>
             <strong>Temps estimé:</strong> {{ timeString }} minutes ({{ time }}s)
             <p v-for="station in path" :key="station.num">
-              <img :src="`/icons/${station.ligne}.png`" style="width: 24px; height: 24px;"> {{ station.nom }} {{ getTimeAdded(station) ? '(+' + getTimeAdded(station) + 's)' : '' }}
+              <img :src="`/icons/${station.ligne}.png`" style="width: 24px; height: 24px;">{{ station.num }} - {{ station.nom }} {{ getTimeAdded(station) ? '(+' + getTimeAdded(station) + 's)' : '' }}
             </p>
           </p>
         </form>

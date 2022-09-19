@@ -47,20 +47,20 @@
           <label for="start">Départ</label>
           <select id="start" v-model="start">
             <option v-for="station in stations" :value="station.num">
-              {{ station.nom }} (Ligne {{ station.ligne }})
+              {{ station.num }} - {{ station.nom }} (Ligne {{ station.ligne }})
             </option>
           </select>
           <label for="end">Arrivée</label>
           <select id="end" v-model="end">
             <option v-for="station in stations" :value="station.num">
-              {{ station.nom }} (Ligne {{ station.ligne }})
+              {{ station.num }} - {{ station.nom }} (Ligne {{ station.ligne }})
             </option>
           </select>
           <button type="button" @click="search">Rechercher</button>
           <p>
             <strong>Temps estimé:</strong> {{ timeString }} minutes ({{ time }}s)
             <p v-for="station in path" :key="station.num">
-              <img :src="`/icons/${station.ligne}.png`" style="width: 24px; height: 24px;"> {{ station.nom }} {{ getTimeAdded(station) ? '(+' + getTimeAdded(station) + 's)' : '' }}
+              <img :src="`/icons/${station.ligne}.png`" style="width: 24px; height: 24px;"> {{ station.nom }} ({{ station.num }}) {{ getTimeAdded(station) ? '(+' + getTimeAdded(station) + 's)' : '' }}
             </p>
           </p>
         </form>

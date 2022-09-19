@@ -47,9 +47,9 @@
           </select>
           <button type="button" @click="search">Rechercher</button>
           <p>
-            <strong>Temps estimé:</strong> {{ timeString }} minutes
+            <strong>Temps estimé:</strong> {{ timeString }} minutes ({{ time }}s)
             <p v-for="station in path" :key="station.num">
-              <img :src="`/icons/${station.ligne}.png`" style="width: 24px; height: 24px;"> {{ station.nom }} {{ getTimeAdded(station) ? '(+' + formatTime(getTimeAdded(station)) + ' minutes)' : '' }}
+              <img :src="`/icons/${station.ligne}.png`" style="width: 24px; height: 24px;"> {{ station.nom }} {{ getTimeAdded(station) ? '(+' + getTimeAdded(station) + 's)' : '' }}
             </p>
           </p>
         </form>
@@ -92,10 +92,17 @@
                   m = Math.floor(time % 3600 / 60).toString().padStart(2,'0'),
                   s = Math.floor(time % 60).toString().padStart(2,'0');
             
-            return `${h}:${m}:${s}`;
+          return `${h}:${m}:${s}`;
         },
-        async getTimeAdded(station) {
-          return this.path.find((st) => st.adjacentStations.find((adj) => adj.num === station.num)).time;
+        getTimeAdded(station) {
+          if(station.num == this.start) return;
+          for(let stn in this.path) {
+            for(let adj of this.path[stn].adjacentStations) {
+              if(adj.num === station.num) {
+                return adj.correspondance;
+              }
+            }
+          }
         }
       },
       computed: {

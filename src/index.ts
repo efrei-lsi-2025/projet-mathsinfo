@@ -134,17 +134,22 @@ const dijkstra = (start: Station, end: Station): ResultatDijkstra => {
   let unvisited: Station[] = [start];
   let PCC: AdjacentStation[] = [];
 
-  PCC[start.num] = { station: start, time: 0 };
-
-  console.log("Début de l'algo avec comme départ : " + start.nom);
+  for(let i in stations) {
+    if(stations[i] == start) {
+      PCC[stations[i].num] = { station: start, time: 0 };
+    } else {
+      PCC[stations[i].num] = { station: null, time: Infinity };
+    }
+  }
 
   let stationActuelle: Station;
-  while ((stationActuelle = unvisited.shift())) {
+  while ((stationActuelle = unvisited.sort((a, b) => PCC[a.num].time - PCC[b.num].time).shift())) {
 
     // On récupère les stations adjacentes qui n'ont pas encore été visitées
     let stationsAdjacentes = stations
       .find((station) => station.num === stationActuelle.num)
-      .adjacentStations.filter(
+      .adjacentStations
+      .filter(
         (n) => visited.filter((v) => v.num === n.station.num).length === 0
       );
 
@@ -157,10 +162,9 @@ const dijkstra = (start: Station, end: Station): ResultatDijkstra => {
       let timeVoisin = PCC[st.station.num] && PCC[st.station.num].time;
       let nouveauCout = timeToStation + st.time;
       if (
-        !timeVoisin ||
+        timeVoisin === undefined ||
         nouveauCout < timeVoisin
       ) {
-        // On met à jour la table des PCC
         PCC[st.station.num] = { station: stationActuelle, time: nouveauCout };
       }
     }

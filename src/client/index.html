@@ -15,6 +15,12 @@
         gap: 30px;
       }
 
+      @media screen and (max-width: 600px) {
+        .itineraire {
+          flex-direction: column-reverse;
+        }
+      }
+
       .itineraire form {
         flex: 0.4;
         width: 100%;
@@ -29,6 +35,8 @@
         top: 0;
         left: 0;
         opacity: 0.8;
+        width: 100%;
+        height: 100%;
       }
 
       .itineraire .map, .map img {
@@ -66,7 +74,7 @@
         </form>
         <div class="map">
           <img :src="map" />
-          <svg width="987" height="952" viewBox="23 0 1346 1341">
+          <svg width="987" height="952" viewBox="18 0 950 952">
             <g v-for="station in stations" :key="station.num">
               <circle
                 :cx="station.lat"

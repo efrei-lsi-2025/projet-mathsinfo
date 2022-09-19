@@ -1,5 +1,5 @@
 import fs from "fs";
-import { AdjacentStation, Interstation, ResultatDijkstra, Station } from "./types";
+import { AdjacentStation, Interstation, Station } from "./types";
 import { getMetroColor } from "./utils";
 
 import canvasLibrary from "canvas";
@@ -129,7 +129,7 @@ async function startCanvasAndServer() {
   }
 }
 
-const dijkstra = (start: Station, end: Station): ResultatDijkstra => {
+const dijkstra = (start: Station, end: Station) => {
   let visited: Station[] = [];
   let unvisited: Station[] = [start];
   let PCC: AdjacentStation[] = [];

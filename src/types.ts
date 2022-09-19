@@ -19,8 +19,3 @@ export type Interstation = {
   station_2?: Station;
   time: number;
 }
-
-export type ResultatDijkstra = {
-  path: Station[];
-  time: number;
-}

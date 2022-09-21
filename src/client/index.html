@@ -52,8 +52,28 @@
         gap: 10px;
       }
 
-      .searchAndReset .secondary {
+      .searchAndReset .reset {
         flex: .33;
+      }
+
+      .searchAndReset button {
+        width: 100%;
+      }
+
+      .map-pulse-animation {
+        animation: pulse 1s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
       }
     </style>
   </head>
@@ -77,7 +97,7 @@
 
           <div class="searchAndReset">
             <button type="button" @click="search" :aria-busy="loading" :class="{secondary: loading}">Rechercher</button>
-            <button type="button" class="secondary" @click="resetStations">&times;</button>
+            <button type="button" class="secondary reset" @click="resetStations">&times;</button>
           </div>
           <p>
             <strong>Temps estimé:</strong> {{ timeString }} minutes ({{ time }}s)
@@ -94,9 +114,10 @@
                 :cx="station.lat"
                 :cy="station.lng"
                 r="3"
-                :stroke="station.num === start ? '#008000' : (station.num === end ? '#fc143c' : 'black')"
+                :class="{ 'map-pulse-animation': station.num === start || station.num === end }"
+                :stroke="station.num === start || station.num === end ? 'orange' : 'black'"
                 :stroke-width="station.num === start || station.num === end ? 3 : 1"
-                :fill="station.num === start ? '#008000' : (station.num === end ? '#fc143c' : 'white')"
+                :fill="station.num === start || station.num === end ? 'orange' : 'white'"
                 @click="selectStation(station)"
               />
             </g>

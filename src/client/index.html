@@ -45,6 +45,16 @@
         width: 100%;
         height: 100%;
       }
+
+      .searchAndReset {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+      }
+
+      .searchAndReset .secondary {
+        flex: .33;
+      }
     </style>
   </head>
   <body>
@@ -59,12 +69,16 @@
             </option>
           </select>
           <label for="end">Arrivée</label>
-          <select id="end" v-model="end">
-            <option v-for="station in stations" :value="station.num">
+          <select id="end" v-model="end" :disabled="start === -1">
+            <option v-for="station in stations.filter((station) => start !== -1 && station.num + 1 !== start + 1)" :value="station.num">
               {{ station.num }} - {{ station.nom }} (Ligne {{ station.ligne }})
             </option>
           </select>
-          <button type="button" @click="search">Rechercher</button>
+
+          <div class="searchAndReset">
+            <button type="button" @click="search" :aria-busy="loading" :class="{secondary: loading}">Rechercher</button>
+            <button type="button" class="secondary" @click="resetStations">&times;</button>
+          </div>
           <p>
             <strong>Temps estimé:</strong> {{ timeString }} minutes ({{ time }}s)
             <p v-for="station in path" :key="station.num">
@@ -75,14 +89,14 @@
         <div class="map">
           <img :src="map" />
           <svg width="987" height="952" viewBox="18 0 950 952">
-            <g v-for="station in stations" :key="station.num">
+            <g v-for="station in stations" :key="station.num" style="cursor: pointer">
               <circle
                 :cx="station.lat"
                 :cy="station.lng"
                 r="3"
-                stroke="black"
-                stroke-width="1"
-                fill="white"
+                :stroke="station.num === start ? '#008000' : (station.num === end ? '#fc143c' : 'black')"
+                :stroke-width="station.num === start || station.num === end ? 3 : 1"
+                :fill="station.num === start ? '#008000' : (station.num === end ? '#fc143c' : 'white')"
                 @click="selectStation(station)"
               />
             </g>
@@ -98,17 +112,25 @@
       data() {
         return {
           stations: [],
-          start: null,
-          end: null,
+          start: -1,
+          end: -1,
           map: "/api/canvas",
           path: [],
-          time: null
+          time: null,
+          loading: false
         };
       },
       mounted() {
         this.getStations();
       },
       methods: {
+        resetStations() {
+          this.start = -1;
+          this.end = -1;
+          this.path = [];
+          this.time = null;
+          this.map = "/api/canvas";
+        },
         selectStation(station) {
           if (this.start === null) {
             this.start = station.num;
@@ -126,11 +148,17 @@
           this.stations = data;
         },
         async search() {
-          const response = await fetch("api/path/" + this.start + "/" + this.end);
-          const data = await response.json();
-          this.map = data.canvas;
-          this.time = data.time;
-          this.path = data.path;
+          this.loading = true;
+          try {
+            const response = await fetch("api/path/" + this.start + "/" + this.end);
+            const data = await response.json();
+            this.map = data.canvas;
+            this.time = data.time;
+            this.path = data.path;
+          } catch(e){
+            console.error(e);
+          }
+          this.loading = false;
         },
         formatTime(time) {
           const h = Math.floor(time / 3600).toString().padStart(2,'0'),

@@ -13,7 +13,10 @@ const port = 3000;
 const stations: Station[] = [];
 const interstations: Interstation[] = [];
 
+export { stations, interstations };
+
 async function readAndParseData() {
+
   console.log("Reading metro.txt file.");
   let lines = await fs.readFileSync("./docs/metro.txt", "utf8");
   let linesArray = lines.split("\n").slice(15);
@@ -188,6 +191,25 @@ const dijkstra = (start: Station, end: Station) => {
   };
 };
 
+const find = (parent: Interstation[], station:Interstation) : number => {
+  const i : number = parent.indexOf(station);
+  if(parent[i] == station) return i;
+  return find(parent, parent[i]);
+}
+
+const union = (parent: Interstation[], x:number, y:number) => {
+  parent[x] = parent[y];
+}
+
+const Kruskal = () => {
+  const ACPM: Interstation[] = [];
+  let aretesSorted: Interstation[] = interstations.sort((a, b) => a.time - b.time);
+  let subsets: Station[];
+  for(let aretes in aretesSorted){
+    
+  }
+}
+
 async function drawCanvasPath(stationsToPathDraw: Station[]) {
   let newCanvas = canvasLibrary.createCanvas(987, 952);
   let newCanvasContext = newCanvas.getContext("2d");
@@ -301,6 +323,14 @@ async function main() {
     );
 
     let { path, time } = await dijkstra(station_1, station_2);
+
+    let pathByLine = [];
+    for (let i in path) {
+      let station = path[i];
+      let tr = pathByLine[station.ligne] || [];
+      tr.push(station);
+    } 
+    
     let newCanvas = await drawCanvasPath(path);
 
     res.status(200).send({

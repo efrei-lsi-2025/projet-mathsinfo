@@ -166,6 +166,24 @@
       opacity: .35;
       z-index: 1;
     }
+
+    details {
+      margin-top: 12px;
+      margin-bottom: 12px;
+      border-bottom: none;
+      background-color: rgba(0, 0, 0, 0.14);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    details[open] summary ~ * {
+      animation: sweep .5s ease-in-out;
+    }
+
+    @keyframes sweep {
+      0%    {opacity: 0; margin-top: -20px}
+      100%  {opacity: 1; margin-top: 0px}
+    }
   </style>
 </head>
 
@@ -239,10 +257,32 @@
                     <li v-if="rtIndex > 0">
                       {{ ligne.routes[rtIndex - 1].stations[ligne.routes[rtIndex - 1].stations.length - 1].nom }}
                     </li>
+                  </ul>
+                  <ul v-if="rt.stations.length < 5" style="margin-bottom: 0">
                     <li v-for="station in rt.stations" :key="station.num">
                       {{ station.nom }}
                     </li>
                   </ul>
+                  <div v-else>
+                    <ul style="margin-bottom: 0">
+                      <li v-for="station in rt.stations.slice(0, 1)" :key="station.num">
+                        {{ station.nom }}
+                      </li>
+                    </ul>
+                    <details>
+                      <summary>{{ rt.stations.length - 2 }} stations</summary>
+                      <ul style="margin-bottom: 0">
+                        <li v-for="station in rt.stations.slice(1, rt.stations.length - 1)" :key="station.num">
+                          {{ station.nom }}
+                        </li>
+                      </ul>
+                    </details>
+                    <ul style="margin-bottom: 0">
+                      <li v-for="station in rt.stations.slice(-1)" :key="station.num">
+                        {{ station.nom }}
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>

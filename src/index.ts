@@ -28,7 +28,7 @@ async function readAndParseData() {
         nom: lineSplit[0].slice(6).trim(),
         ligne: lineSplit[1].trim(),
         terminus: lineSplit[2].split(" ")[0] === "True",
-        branchement: parseInt(lineSplit[2].split(" ")[1]),
+        branchement: parseInt(lineSplit[2].split(" ").filter(n => n)[1]),
         adjacentStations: [],
       });
     } else {
@@ -236,7 +236,7 @@ async function main() {
         nom: s.nom,
         ligne: s.ligne,
         terminus: s.terminus,
-        branchement: s.branchement || 0,
+        branchement: s.branchement,
         lat: s.lat,
         lng: s.lng,
         adjacentStations: s.adjacentStations.map(

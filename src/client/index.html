@@ -265,7 +265,7 @@
             this.ligneEdgesAnimation[ligne] = {
               pathVertices,
               strokeLength: pathLength,
-              animation: `dashVert 1s ease forwards`,
+              animation: `dashVert 1s linear forwards`,
             };
 
             await new Promise((resolve, reject) => {

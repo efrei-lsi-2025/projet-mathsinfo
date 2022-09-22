@@ -575,11 +575,7 @@
           if (ligne.routes.length === 2) {
             let unsureDest = ligne.routes.findIndex((r) => r.destination.includes(" ou "));
             if (unsureDest === -1) continue;
-            if (ligne.routes[unsureDest].stations)
-              console.log("hmmmm");
-            // add the stations of the unsure destination to the other one at the beginning of the route
             ligne.routes[1 - unsureDest].stations = [...ligne.routes[unsureDest].stations, ...ligne.routes[1 - unsureDest].stations]
-            // remove the unsure destination
             ligne.routes.splice(unsureDest, 1);
           }
         }

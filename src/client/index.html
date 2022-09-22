@@ -231,7 +231,7 @@
                   <img :src="`/icons/${ligne.ligne}.png`" />
                 </div>
               </div>
-              <div style="margin-top: 5px">
+              <div style="margin-top: 10px">
                 <div v-for="(rt, rtIndex) in ligne.routes" :key="rt.destination" style="padding: 0 20px;">
                   <div v-if="rtIndex > 0" style="margin-top: .5rem; margin-bottom: .5rem">Changement de direction</div>
                   Direction <strong>{{ rt.destination }}</strong>

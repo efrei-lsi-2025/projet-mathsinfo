@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css" />
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     .itineraire {
       display: flex;
@@ -43,6 +44,7 @@
       flex: 0.7;
       width: 100%;
       height: 100%;
+      transition: opacity 0.2s ease;
     }
 
     .map.opacity img {
@@ -84,8 +86,6 @@
     .pathVertices {
       fill: transparent;
       stroke-width: 4;
-
-      animation-fill-mode: backwards;
 
       stroke-dasharray: var(--stroke-length);
       stroke-dashoffset: 0;
@@ -134,7 +134,7 @@
         </p>
       </form>
       <div class="map" :class="{ opacity: this.path.length > 0 }">
-        <img :src="map" />
+        <img src="/api/canvas" />
         <svg width="987" height="952" viewBox="18 0 950 952" style="max-height: 952px;">
           <g>
             <path v-for="ligne in verticesUniqueLignesArray" class="pathVertices" :ref="`pathVertices-${ligne}`" :stroke="getLigneColor(ligne)" :style="{ '--stroke-length': ligneEdgesAnimation[ligne]?.strokeLength, 'animation': ligneEdgesAnimation[ligne]?.animation }" :d="ligneEdgesAnimation[ligne]?.pathVertices" />
@@ -161,7 +161,6 @@
         stations: [],
         start: -1,
         end: -1,
-        map: "/api/canvas",
         path: [],
         time: null,
         loading: false,
@@ -178,7 +177,6 @@
         this.end = -1;
         this.path = [];
         this.time = null;
-        this.map = "/api/canvas";
       },
       selectStation(station) {
         if(this.loading || this.animating) return;
@@ -202,11 +200,20 @@
         try {
           const response = await fetch("api/path/" + this.start + "/" + this.end);
           const data = await response.json();
+          if(response.status !== 200) {
+            throw new Error(data.message);
+          }
           this.time = data.time;
           this.path = data.path;
           this.pathAnimation();
         } catch (e) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Erreur',
+            text: e.message,
+          })
           console.error(e);
+          this.resetStations();
         }
         this.loading = false;
       },
@@ -258,7 +265,7 @@
             this.ligneEdgesAnimation[ligne] = {
               pathVertices,
               strokeLength: pathLength,
-              animation: `dashVert 1s linear forwards`,
+              animation: `dashVert 1s ease forwards`,
             };
 
             await new Promise((resolve, reject) => {

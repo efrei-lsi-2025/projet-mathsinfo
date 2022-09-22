@@ -249,6 +249,19 @@ async function main() {
 
   // router to get path from a station ID to another
   router.get("/path/:station_1/:station_2", async (req: any, res: any) => {
+    if(!stations.find(s => s.num == req.params.station_1)) {
+      res.status(404).send({ message: "La station de départ n'existe pas." });
+      return;
+    }
+    if(!stations.find(s => s.num == req.params.station_2)) {
+      res.status(404).send({ message: "La station d'arrivée n'existe pas." });
+      return;
+    }
+    if(req.params.station_1 == req.params.station_2) {
+      res.status(400).send({ message: "La station de départ et d'arrivée sont identiques." });
+      return;
+    }
+
     let station_1 = stations.find(
       (s) => s.num === parseInt(req.params.station_1)
     );

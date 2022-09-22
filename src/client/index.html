@@ -108,13 +108,13 @@
     <div class="itineraire">
       <form>
         <label for="start">Départ</label>
-        <select id="start" v-model="start">
+        <select id="start" v-model="start" :disabled="loading || animating">
           <option v-for="station in stations" :value="station.num">
             {{ station.num }} - {{ station.nom }} (Ligne {{ station.ligne }})
           </option>
         </select>
         <label for="end">Arrivée</label>
-        <select id="end" v-model="end" :disabled="start === -1">
+        <select id="end" v-model="end" :disabled="start === -1 || loading || animating">
           <option v-for="station in stations.filter((station) => start !== -1 && station.num + 1 !== start + 1)"
             :value="station.num">
             {{ station.num }} - {{ station.nom }} (Ligne {{ station.ligne }})
@@ -122,15 +122,15 @@
         </select>
 
         <div class="searchAndReset">
-          <button type="button" @click="search" :aria-busy="loading || animating" :class="{secondary: loading}">Rechercher</button>
+          <button type="button" @click="search" :aria-busy="loading || animating" :class="{secondary: loading || animating}">Rechercher</button>
           <button type="button" class="secondary reset" @click="resetStations">&times;</button>
         </div>
-        <p>
+        <p v-if="this.path.length > 0">
           <strong>Temps estimé:</strong> {{ timeString }} minutes ({{ time }}s)
-        <p v-for="station in path" :key="station.num">
-          <img :src="`/icons/${station.ligne}.png`" style="width: 24px; height: 24px;"> {{ station.nom }} ({{
-          station.num }}) {{ getTimeAdded(station) ? '(+' + getTimeAdded(station) + 's)' : '' }}
-        </p>
+          <p v-for="station in path" :key="station.num">
+            <img :src="`/icons/${station.ligne}.png`" style="width: 24px; height: 24px;"> {{ station.nom }} ({{
+            station.num }}) {{ getTimeAdded(station) ? '(+' + getTimeAdded(station) + 's)' : '' }}
+          </p>
         </p>
       </form>
       <div class="map" :class="{ opacity: this.path.length > 0 }">

@@ -210,72 +210,6 @@ const Kruskal = () => {
   }
 }
 
-async function drawCanvasPath(stationsToPathDraw: Station[]) {
-  let newCanvas = canvasLibrary.createCanvas(987, 952);
-  let newCanvasContext = newCanvas.getContext("2d");
-
-  const image = await canvasLibrary.loadImage("./docs/metrof_r.png");
-  newCanvasContext.globalAlpha = 0.07;
-  newCanvasContext.drawImage(image, 0, 0, 987, 952);
-  newCanvasContext.globalAlpha = 1;
-
-  for (let i in stationsToPathDraw) {
-    let stationTo = stationsToPathDraw[parseInt(i) + 1];
-    if (!stationTo) break;
-
-    newCanvasContext.beginPath();
-    newCanvasContext.moveTo(
-      stationsToPathDraw[i].lat,
-      stationsToPathDraw[i].lng
-    );
-    newCanvasContext.lineTo(stationTo.lat, stationTo.lng);
-    newCanvasContext.lineWidth = 2;
-    newCanvasContext.strokeStyle = getMetroColor(stationsToPathDraw[i].ligne);
-    newCanvasContext.stroke();
-  }
-
-  let drawnStations: Station[] = [];
-  for (let i in stationsToPathDraw) {
-    if (drawnStations.find((s) => s.nom === stationsToPathDraw[i].nom)) {
-      newCanvasContext.beginPath();
-      newCanvasContext.arc(
-        stationsToPathDraw[i].lat,
-        stationsToPathDraw[i].lng,
-        4,
-        0,
-        2 * Math.PI
-      );
-      newCanvasContext.fillStyle = "black";
-      newCanvasContext.fill();
-
-      newCanvasContext.beginPath();
-      newCanvasContext.arc(
-        stationsToPathDraw[i].lat,
-        stationsToPathDraw[i].lng,
-        3,
-        0,
-        2 * Math.PI
-      );
-      newCanvasContext.fillStyle = "white";
-      newCanvasContext.fill();
-    } else {
-      drawnStations.push(stationsToPathDraw[i]);
-      newCanvasContext.beginPath();
-      newCanvasContext.arc(
-        stationsToPathDraw[i].lat,
-        stationsToPathDraw[i].lng,
-        3,
-        0,
-        2 * Math.PI
-      );
-      newCanvasContext.fillStyle = getMetroColor(stationsToPathDraw[i].ligne);
-      newCanvasContext.fill();
-    }
-  }
-
-  return newCanvas;
-}
-
 async function main() {
   await readAndParseData();
   console.log("Done.");
@@ -329,9 +263,7 @@ async function main() {
       let station = path[i];
       let tr = pathByLine[station.ligne] || [];
       tr.push(station);
-    } 
-    
-    let newCanvas = await drawCanvasPath(path);
+    }
 
     res.status(200).send({
       path: path.map((s) => {
@@ -339,6 +271,7 @@ async function main() {
           num: s.num,
           nom: s.nom,
           ligne: s.ligne,
+          couleurLigne: getMetroColor(s.ligne),
           terminus: s.terminus,
           branchement: s.branchement,
           lat: s.lat,
@@ -348,8 +281,7 @@ async function main() {
           ),
         };
       }),
-      time,
-      canvas: newCanvas.toDataURL(),
+      time
     });
   });
 

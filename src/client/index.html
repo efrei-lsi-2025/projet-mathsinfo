@@ -1,209 +1,299 @@
 <html>
-  <head>
-    <title>Itinéraire RATP - Projet Maths Info</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
-    />
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <style>
+
+<head>
+  <title>Itinéraire RATP - Projet Maths Info</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    .itineraire {
+      display: flex;
+      flex-direction: row;
+      gap: 30px;
+    }
+
+    @media screen and (max-width: 700px) {
       .itineraire {
-        display: flex;
-        flex-direction: row;
-        gap: 30px;
+        flex-direction: column-reverse;
+      }
+    }
+
+    .itineraire form {
+      flex: 0.4;
+      width: 100%;
+    }
+
+    .itineraire .map {
+      position: relative;
+    }
+
+    .itineraire svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0.8;
+      width: 100%;
+      height: 100%;
+    }
+
+    .itineraire .map,
+    .map img {
+      border-radius: 10px;
+      flex: 0.7;
+      width: 100%;
+      height: 100%;
+    }
+
+    .map.opacity img {
+      opacity: 0.1;
+    }
+
+    .searchAndReset {
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+    }
+
+    .searchAndReset .reset {
+      flex: .33;
+    }
+
+    .searchAndReset button {
+      width: 100%;
+    }
+
+    .map-pulse-animation {
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 1;
       }
 
-      @media screen and (max-width: 700px) {
-        .itineraire {
-          flex-direction: column-reverse;
-        }
+      50% {
+        opacity: 0;
       }
 
-      .itineraire form {
-        flex: 0.4;
-        width: 100%;
+      100% {
+        opacity: 1;
       }
+    }
 
-      .itineraire .map {
-        position: relative;
+    .pathVertices {
+      fill: transparent;
+      stroke-width: 4;
+
+      animation-fill-mode: backwards;
+
+      stroke-dasharray: var(--stroke-length);
+      stroke-dashoffset: 0;
+    }
+
+    @keyframes dashVert {
+      0% {
+        stroke-dashoffset: var(--stroke-length);
       }
-
-      .itineraire svg {
-        position: absolute;
-        top: 0;
-        left: 0;
-        opacity: 0.8;
-        width: 100%;
-        height: 100%;
+      100% {
+        stroke-dashoffset: 0;
       }
+    }
+  </style>
+</head>
 
-      .itineraire .map, .map img {
-        border-radius: 10px;
-        flex: 0.7;
-        width: 100%;
-        height: 100%;
-      }
+<body>
+  <main class="container">
+    <h1>Itinéraire RATP - Projet Maths Info</h1>
+    <div class="itineraire">
+      <form>
+        <label for="start">Départ</label>
+        <select id="start" v-model="start">
+          <option v-for="station in stations" :value="station.num">
+            {{ station.num }} - {{ station.nom }} (Ligne {{ station.ligne }})
+          </option>
+        </select>
+        <label for="end">Arrivée</label>
+        <select id="end" v-model="end" :disabled="start === -1">
+          <option v-for="station in stations.filter((station) => start !== -1 && station.num + 1 !== start + 1)"
+            :value="station.num">
+            {{ station.num }} - {{ station.nom }} (Ligne {{ station.ligne }})
+          </option>
+        </select>
 
-      .searchAndReset {
-        display: flex;
-        flex-direction: row;
-        gap: 10px;
-      }
-
-      .searchAndReset .reset {
-        flex: .33;
-      }
-
-      .searchAndReset button {
-        width: 100%;
-      }
-
-      .map-pulse-animation {
-        animation: pulse 1s infinite;
-      }
-
-      @keyframes pulse {
-        0% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0;
-        }
-        100% {
-          opacity: 1;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <main class="container">
-      <h1>Itinéraire RATP - Projet Maths Info</h1>
-      <div class="itineraire">
-        <form>
-          <label for="start">Départ</label>
-          <select id="start" v-model="start">
-            <option v-for="station in stations" :value="station.num">
-              {{ station.num }} - {{ station.nom }} (Ligne {{ station.ligne }})
-            </option>
-          </select>
-          <label for="end">Arrivée</label>
-          <select id="end" v-model="end" :disabled="start === -1">
-            <option v-for="station in stations.filter((station) => start !== -1 && station.num + 1 !== start + 1)" :value="station.num">
-              {{ station.num }} - {{ station.nom }} (Ligne {{ station.ligne }})
-            </option>
-          </select>
-
-          <div class="searchAndReset">
-            <button type="button" @click="search" :aria-busy="loading" :class="{secondary: loading}">Rechercher</button>
-            <button type="button" class="secondary reset" @click="resetStations">&times;</button>
-          </div>
-          <p>
-            <strong>Temps estimé:</strong> {{ timeString }} minutes ({{ time }}s)
-            <p v-for="station in path" :key="station.num">
-              <img :src="`/icons/${station.ligne}.png`" style="width: 24px; height: 24px;"> {{ station.nom }} ({{ station.num }}) {{ getTimeAdded(station) ? '(+' + getTimeAdded(station) + 's)' : '' }}
-            </p>
-          </p>
-        </form>
-        <div class="map">
-          <img :src="map" />
-          <svg width="987" height="952" viewBox="18 0 950 952">
-            <g v-for="station in stations" :key="station.num" style="cursor: pointer">
-              <circle
-                :cx="station.lat"
-                :cy="station.lng"
-                r="3"
-                :class="{ 'map-pulse-animation': station.num === start || station.num === end }"
-                :stroke="station.num === start || station.num === end ? 'orange' : 'black'"
-                :stroke-width="station.num === start || station.num === end ? 3 : 1"
-                :fill="station.num === start || station.num === end ? 'orange' : 'white'"
-                @click="selectStation(station)"
-              />
-            </g>
-          </svg>
+        <div class="searchAndReset">
+          <button type="button" @click="search" :aria-busy="loading || animating" :class="{secondary: loading}">Rechercher</button>
+          <button type="button" class="secondary reset" @click="resetStations">&times;</button>
         </div>
+        <p>
+          <strong>Temps estimé:</strong> {{ timeString }} minutes ({{ time }}s)
+        <p v-for="station in path" :key="station.num">
+          <img :src="`/icons/${station.ligne}.png`" style="width: 24px; height: 24px;"> {{ station.nom }} ({{
+          station.num }}) {{ getTimeAdded(station) ? '(+' + getTimeAdded(station) + 's)' : '' }}
+        </p>
+        </p>
+      </form>
+      <div class="map" :class="{ opacity: this.path.length > 0 }">
+        <img :src="map" />
+        <svg width="987" height="952" viewBox="18 0 950 952" style="max-height: 952px;">
+          <g>
+            <path v-for="ligne in verticesUniqueLignesArray" class="pathVertices" :ref="`pathVertices-${ligne}`" :stroke="getLigneColor(ligne)" :style="{ '--stroke-length': ligneEdgesAnimation[ligne]?.strokeLength, 'animation': ligneEdgesAnimation[ligne]?.animation }" :d="ligneEdgesAnimation[ligne]?.pathVertices" />
+          </g>
+          <g>
+            <circle v-for="station in stations" :key="station.num" style="cursor: pointer" :cx="station.lat"
+              :cy="station.lng" r="3" :class="{ 'map-pulse-animation': station.num === start || station.num === end }"
+              :stroke="station.num === start || station.num === end ? 'orange' : 'black'"
+              :stroke-width="station.num === start || station.num === end ? 3 : 1"
+              :fill="station.num === start || station.num === end ? 'orange' : 'white'"
+              @click="selectStation(station)" />
+          </g>
+        </svg>
       </div>
-    </main>
-  </body>
-  <script>
-    const { createApp } = Vue;
+    </div>
+  </main>
+</body>
+<script>
+  const {createApp} = Vue;
 
-    createApp({
-      data() {
-        return {
-          stations: [],
-          start: -1,
-          end: -1,
-          map: "/api/canvas",
-          path: [],
-          time: null,
-          loading: false
-        };
+  createApp({
+    data() {
+      return {
+        stations: [],
+        start: -1,
+        end: -1,
+        map: "/api/canvas",
+        path: [],
+        time: null,
+        loading: false,
+        animating: false,
+        ligneEdgesAnimation: {},
+      };
+    },
+    mounted() {
+      this.getStations();
+    },
+    methods: {
+      resetStations() {
+        this.start = -1;
+        this.end = -1;
+        this.path = [];
+        this.time = null;
+        this.map = "/api/canvas";
       },
-      mounted() {
-        this.getStations();
+      selectStation(station) {
+        if(this.loading || this.animating) return;
+        if (this.start === null) {
+          this.start = station.num;
+        } else if (this.end === null) {
+          this.end = station.num;
+          this.search();
+        } else {
+          this.start = station.num;
+          this.end = null;
+        }
       },
-      methods: {
-        resetStations() {
-          this.start = -1;
-          this.end = -1;
-          this.path = [];
-          this.time = null;
-          this.map = "/api/canvas";
-        },
-        selectStation(station) {
-          if (this.start === null) {
-            this.start = station.num;
-          } else if (this.end === null) {
-            this.end = station.num;
-            this.search();
-          } else {
-            this.start = station.num;
-            this.end = null;
-          }
-        },
-        async getStations() {
-          const response = await fetch("api/stations");
+      async getStations() {
+        const response = await fetch("api/stations");
+        const data = await response.json();
+        this.stations = data;
+      },
+      async search() {
+        this.loading = true;
+        try {
+          const response = await fetch("api/path/" + this.start + "/" + this.end);
           const data = await response.json();
-          this.stations = data;
-        },
-        async search() {
-          this.loading = true;
-          try {
-            const response = await fetch("api/path/" + this.start + "/" + this.end);
-            const data = await response.json();
-            this.map = data.canvas;
-            this.time = data.time;
-            this.path = data.path;
-          } catch(e){
-            console.error(e);
-          }
-          this.loading = false;
-        },
-        formatTime(time) {
-          const h = Math.floor(time / 3600).toString().padStart(2,'0'),
-                  m = Math.floor(time % 3600 / 60).toString().padStart(2,'0'),
-                  s = Math.floor(time % 60).toString().padStart(2,'0');
-            
-          return `${h}:${m}:${s}`;
-        },
-        getTimeAdded(station) {
-          if(station.num == this.start) return;
-          for(let stn in this.path) {
-            for(let adj of this.path[stn].adjacentStations) {
-              if(adj.num === station.num) {
-                return adj.correspondance;
-              }
+          this.time = data.time;
+          this.path = data.path;
+          this.pathAnimation();
+        } catch (e) {
+          console.error(e);
+        }
+        this.loading = false;
+      },
+      formatTime(time) {
+        const h = Math.floor(time / 3600).toString().padStart(2, '0'),
+          m = Math.floor(time % 3600 / 60).toString().padStart(2, '0'),
+          s = Math.floor(time % 60).toString().padStart(2, '0');
+
+        return `${h}:${m}:${s}`;
+      },
+      getTimeAdded(station) {
+        if (station.num == this.start) return;
+        for (let stn in this.path) {
+          for (let adj of this.path[stn].adjacentStations) {
+            if (adj.num === station.num) {
+              return adj.correspondance;
             }
           }
         }
       },
-      computed: {
-        timeString() {
-          return this.formatTime(this.time);
+      getPathVerticesForLigne(ligne) {
+        let ligneVertices = this.vertices.filter((vertex) => vertex.ligne === ligne);
+        return ligneVertices.length > 0 ? `M${ligneVertices[0].lat},${ligneVertices[0].lng} ` + ligneVertices
+          .slice(1)
+          .map((vert, i) => {
+            return `L${vert.lat},${vert.lng}`;
+          })
+          .join(' ') : ``;
+      },
+      getLengthOfLigne(ligne) {
+        // length calculated with lat/lng
+        let ligneVertices = this.vertices.filter((vertex) => vertex.ligne === ligne);
+        let length = 0;
+        for (let i = 0; i < ligneVertices.length - 1; i++) {
+          length += Math.sqrt(Math.pow(ligneVertices[i].lat - ligneVertices[i + 1].lat, 2) + Math.pow(ligneVertices[i].lng - ligneVertices[i + 1].lng, 2));
         }
+        return length;
+      },
+      getLigneColor(ligne) {
+        return this.vertices.filter((v) => v.ligne === ligne)[0].color;
+      },
+      pathAnimation() {
+        this.ligneEdgesAnimation = {};
+        this.$nextTick(async () => {
+          for(let ligne of this.verticesUniqueLignesArray) {
+            this.animating = true;
+            const pathVertices = this.getPathVerticesForLigne(ligne);
+            const pathLength = this.getLengthOfLigne(ligne);
+            this.ligneEdgesAnimation[ligne] = {
+              pathVertices,
+              strokeLength: pathLength,
+              animation: `dashVert 1s linear forwards`,
+            };
+
+            await new Promise((resolve, reject) => {
+              setTimeout(() => {
+                resolve();
+              }, 1000);
+            });
+            this.ligneEdgesAnimation[ligne].animation = ``
+            this.animating = false;
+          }
+        });
       }
-    }).mount("main");
-  </script>
+    },
+    computed: {
+      timeString() {
+        return this.formatTime(this.time);
+      },
+      vertices() {
+        // map the path to the vertices
+        return this.path.map((station) => {
+          return {
+            num: station.num,
+            nom: station.nom,
+            lat: station.lat,
+            lng: station.lng,
+            color: station.couleurLigne,
+            ligne: station.ligne,
+          };
+        });
+      },
+      verticesUniqueLignesArray() {
+        return this.vertices.map((vert) => vert.ligne).filter((value, index, self) => self.indexOf(value) === index);
+      },
+    }
+  }).mount("main");
+</script>
+
 </html>

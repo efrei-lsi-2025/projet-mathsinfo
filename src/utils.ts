@@ -1,4 +1,3 @@
-import { stations } from ".";
 import { AdjacentStation, Station } from "./types";
 
 function getMetroColor(line: string) {
@@ -48,26 +47,4 @@ function getMetroColor(line: string) {
   }
 }
 
-function getTerminusFromTwoStations(s1: Station, s2: Station, alreadyVisited: Station[] = []) {
-  if(s1.ligne !== s2.ligne) {
-    throw new Error("Stations are not on the same line.");
-  }
-
-  if(s2.terminus) {
-    return s2;
-  } else {
-    alreadyVisited.push(s1);
-    const adj = s1.adjacentStations.filter(adj => !alreadyVisited.includes(adj.station) && adj.station.ligne === s1.ligne);
-    if(adj.length === 1) {
-      return getTerminusFromTwoStations(s1, adj[0].station, alreadyVisited);
-    } else if (adj.length === 2) {
-      const terminus1 = getTerminusFromTwoStations(s1, adj[0].station, alreadyVisited);
-      const terminus2 = getTerminusFromTwoStations(s1, adj[1].station, alreadyVisited);
-      return [terminus1, terminus2];
-    } else {
-      throw new Error("Cannot find terminus.");
-    }
-  }
-}
-
-export {getMetroColor, getTerminusFromTwoStations};
+export {getMetroColor};

@@ -27,6 +27,7 @@
 
     .itineraire .map {
       position: relative;
+      max-height: 952px;
     }
 
     .itineraire svg {
@@ -128,14 +129,13 @@
         <p v-if="this.path.length > 0">
           <strong>Temps estimé:</strong> {{ timeString }} minutes ({{ time }}s)
           <p v-for="station in path" :key="station.num">
-            <img :src="`/icons/${station.ligne}.png`" style="width: 24px; height: 24px;"> {{ station.nom }} ({{
-            station.num }}) {{ getTimeAdded(station) ? '(+' + getTimeAdded(station) + 's)' : '' }}
+            <img :src="`/icons/${station.ligne}.png`" style="width: 24px; height: 24px;"> {{ station.nom }} ({{ parseDestinationArrayToString(station) }})
           </p>
         </p>
       </form>
       <div class="map" :class="{ opacity: this.path.length > 0 }">
         <img src="/api/canvas" />
-        <svg width="987" height="952" viewBox="18 0 950 952" style="max-height: 952px;">
+        <svg width="987" height="952" viewBox="18 0 950 952">
           <g>
             <path v-for="ligne in verticesUniqueLignesArray" class="pathVertices" :ref="`pathVertices-${ligne}`" :stroke="getLigneColor(ligne)" :style="{ '--stroke-length': ligneEdgesAnimation[ligne]?.strokeLength, 'animation': ligneEdgesAnimation[ligne]?.animation }" :d="ligneEdgesAnimation[ligne]?.pathVertices" />
           </g>
@@ -154,6 +154,18 @@
 </body>
 <script>
   const {createApp} = Vue;
+
+  function flatten(ary) {
+    let ret = [];
+    for(var i = 0; i < ary.length; i++) {
+        if(Array.isArray(ary[i])) {
+            ret = ret.concat(flatten(ary[i]));
+        } else {
+            ret.push(ary[i]);
+        }
+    }
+    return ret;
+  }
 
   createApp({
     data() {
@@ -195,6 +207,9 @@
         const data = await response.json();
         this.stations = data;
       },
+      parseDestinationArrayToString(station) {
+        return 'Direction ' + station.destination.map((destination) => destination.nom).join(' ou ');
+      },
       async search() {
         this.loading = true;
         try {
@@ -204,7 +219,23 @@
             throw new Error(data.message);
           }
           this.time = data.time;
-          this.path = data.path;
+
+          let path = data.path;
+          let lastLigne = null;
+          let destination = null;
+          for(let vertex in path) {
+            if(lastLigne !== path[vertex].ligne) {
+              let stationsForLigne = path.filter((station) => station.ligne === path[vertex].ligne);
+              destination = flatten(this.getTerminusFromTwoStations(stationsForLigne[0].num, stationsForLigne[stationsForLigne.length - 1].num));
+              destination = destination.filter((item, index) => destination.indexOf(item) === index);
+              destination = destination.map((station) => this.stations.find((station2) => station2.num === station));
+              lastLigne = path[vertex].ligne;
+            }
+            path[vertex].destination = destination;
+          }
+          console.log(path);
+
+          this.path = path;
           this.pathAnimation();
         } catch (e) {
           Swal.fire({
@@ -232,6 +263,42 @@
               return adj.correspondance;
             }
           }
+        }
+      },
+      getTerminusFromTwoStations(stationNum, targetNum, visitedTarget = false, alreadyVisited = []) {
+        station = this.stations.find((station) => station.num === stationNum);
+        target = this.stations.find((station) => station.num === targetNum);
+        
+        if(stationNum === targetNum) {
+          visitedTarget = true;
+        }
+        
+        // console.log(station.nom + " -> " + target.nom + " (visitedTarget: " + visitedTarget + ")");
+        const adj = station.adjacentStations.filter(adj => !alreadyVisited.includes(adj.num) && adj.ligne === station.ligne);
+        //console.log("Adjacents: " + adj.map((adj) => adj.nom).join(", "));
+
+        if(adj.length === 0) {
+          if(visitedTarget && station.terminus == true) {
+            console.log("Arrivé à un cul de sac: " + station.nom);
+            return [station.num];
+          } else {
+            return null;
+          }
+        } else if(adj.length === 1) {
+          return this.getTerminusFromTwoStations(adj[0].num, targetNum, visitedTarget, [...alreadyVisited, station.num]);
+        } else if (adj.length === 2) {
+          let terminus1 = this.getTerminusFromTwoStations(adj[0].num, targetNum, visitedTarget, [...alreadyVisited, station.num]);
+          let terminus2 = this.getTerminusFromTwoStations(adj[1].num, targetNum, visitedTarget, [...alreadyVisited, station.num]);
+
+          if(terminus1 === null) {
+            return terminus2;
+          } else if(terminus2 === null) {
+            return terminus1;
+          } else {
+            return [...terminus1, ...terminus2];
+          }
+        } else {
+          throw new Error("Plus de deux stations adjacentes.");
         }
       },
       getPathVerticesForLigne(ligne) {

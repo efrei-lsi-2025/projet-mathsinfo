@@ -236,11 +236,11 @@ async function main() {
         nom: s.nom,
         ligne: s.ligne,
         terminus: s.terminus,
-        branchement: s.branchement,
+        branchement: s.branchement || 0,
         lat: s.lat,
         lng: s.lng,
         adjacentStations: s.adjacentStations.map(
-          (s) => { return { num: s.station.num, nom: s.station.nom, ligne: s.station.ligne, correspondance: s.time } }
+          (s) => { return { num: s.station.num, nom: s.station.nom, ligne: s.station.ligne, branchement: s.station.branchement || 0, correspondance: s.time } }
         ),
       };
     });

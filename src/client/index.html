@@ -222,14 +222,21 @@
 
           let path = data.path;
           let lastLigne = null;
+          let lastBranchement = null;
           let destination = null;
           for(let vertex in path) {
-            if(lastLigne !== path[vertex].ligne) {
-              let stationsForLigne = path.filter((station) => station.ligne === path[vertex].ligne);
-              destination = flatten(this.getTerminusFromTwoStations(stationsForLigne[0].num, stationsForLigne[stationsForLigne.length - 1].num));
+            if(lastLigne !== path[vertex].ligne || lastBranchement !== path[vertex].branchement) {
+              let stationsForLigne = path.filter((station) => station.ligne === path[vertex].ligne && station.branchement === path[vertex].branchement);
+              destination = this.getTerminusFromTwoStations(stationsForLigne[0].num, stationsForLigne[stationsForLigne.length - 1].num);
+              if(destination) {
+                destination = flatten(destination);
+              } else {
+                destination = [this.stations.find((station) => station.ligne === path[vertex].ligne && station.branchement === 0 && station.terminus == true).num];
+              }
               destination = destination.filter((item, index) => destination.indexOf(item) === index);
               destination = destination.map((station) => this.stations.find((station2) => station2.num === station));
               lastLigne = path[vertex].ligne;
+              lastBranchement = path[vertex].branchement;
             }
             path[vertex].destination = destination;
           }
@@ -265,40 +272,51 @@
           }
         }
       },
-      getTerminusFromTwoStations(stationNum, targetNum, visitedTarget = false, alreadyVisited = []) {
+      getTerminusFromTwoStations(stationNum, targetNum, visitedTarget = false, alreadyVisited = [], origineBranchement = null) {
         station = this.stations.find((station) => station.num === stationNum);
         target = this.stations.find((station) => station.num === targetNum);
         
         if(stationNum === targetNum) {
           visitedTarget = true;
         }
+
+        if(origineBranchement === null) {
+          origineBranchement = station.branchement;
+        }
+
+        if(visitedTarget && station.terminus == true) {
+          console.log("Arrivé à un cul de sac: " + station.nom);
+          return [station.num];
+        }
         
-        // console.log(station.nom + " -> " + target.nom + " (visitedTarget: " + visitedTarget + ")");
-        const adj = station.adjacentStations.filter(adj => !alreadyVisited.includes(adj.num) && adj.ligne === station.ligne);
-        //console.log("Adjacents: " + adj.map((adj) => adj.nom).join(", "));
+        let firstAdj = station.adjacentStations.filter(adj => !alreadyVisited.includes(adj.num) && adj.ligne === station.ligne);
+        
+        let finalAdj = [];
+        for(let i in firstAdj) {
+            if(origineBranchement === firstAdj[i].branchement) {
+              finalAdj.push(firstAdj[i]);
+            } else if(origineBranchement === 1 && firstAdj[i].branchement === 0) {
+              finalAdj.push(firstAdj[i]);
+            } else if(origineBranchement === 2 && firstAdj[i].branchement === 0) {
+              finalAdj.push(firstAdj[i]);
+            } else if(origineBranchement === 0 && firstAdj[i].branchement === 1) {
+              finalAdj.push(firstAdj[i]);
+            } else if(origineBranchement === 0 && firstAdj[i].branchement === 2) {
+              finalAdj.push(firstAdj[i]);
+            }
+        }
+        let adj = finalAdj;
+        console.log("Station: " + station.nom + " - Adjacent: " + adj.map((adj) => adj.nom).join(', '));
 
         if(adj.length === 0) {
-          if(visitedTarget && station.terminus == true) {
-            console.log("Arrivé à un cul de sac: " + station.nom);
-            return [station.num];
-          } else {
-            return null;
-          }
+          return null;
         } else if(adj.length === 1) {
-          return this.getTerminusFromTwoStations(adj[0].num, targetNum, visitedTarget, [...alreadyVisited, station.num]);
+          return this.getTerminusFromTwoStations(adj[0].num, targetNum, visitedTarget, [...alreadyVisited, station.num], origineBranchement);
         } else if (adj.length === 2) {
-          let terminus1 = this.getTerminusFromTwoStations(adj[0].num, targetNum, visitedTarget, [...alreadyVisited, station.num]);
-          let terminus2 = this.getTerminusFromTwoStations(adj[1].num, targetNum, visitedTarget, [...alreadyVisited, station.num]);
+          let terminus1 = this.getTerminusFromTwoStations(adj[0].num, targetNum, visitedTarget, [...alreadyVisited, station.num], origineBranchement);
+          let terminus2 = this.getTerminusFromTwoStations(adj[1].num, targetNum, visitedTarget, [...alreadyVisited, station.num], origineBranchement);
 
-          if(terminus1 === null) {
-            return terminus2;
-          } else if(terminus2 === null) {
-            return terminus1;
-          } else {
-            return [...terminus1, ...terminus2];
-          }
-        } else {
-          throw new Error("Plus de deux stations adjacentes.");
+          return [...(terminus1 || []), ...(terminus2 || [])]
         }
       },
       getPathVerticesForLigne(ligne) {

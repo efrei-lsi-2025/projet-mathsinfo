@@ -217,6 +217,10 @@
               :class="{secondary: loading || animating}">Rechercher</button>
             <button type="button" class="secondary reset" @click="resetStations">&times;</button>
           </div>
+          <label for="switch" style="margin-bottom: 1rem;">
+            <input type="checkbox" id="switch" name="switch" role="switch" v-model="showAcpm">
+            Afficher l'arbre couvrant
+          </label>
         </form>
         <div v-if="this.path.length > 0 && !loading" class="route">
           <div class="route-card time">
@@ -299,7 +303,7 @@
         </div>
       </div>
       <div class="map" :class="{ opacity: this.path.length > 0 }">
-        <img src="/api/canvas" />
+        <img :src="imageUrl" />
         <svg width="987" height="952" viewBox="18 0 950 952">
           <g>
             <path v-for="ligne in verticesUniqueLignesArray" class="pathVertices" :ref="`pathVertices-${ligne}`"
@@ -346,6 +350,7 @@
         loading: false,
         animating: false,
         ligneEdgesAnimation: {},
+        showAcpm: false,
       };
     },
     mounted() {
@@ -527,6 +532,9 @@
       }
     },
     computed: {
+      imageUrl() {
+        return this.showAcpm ? '/api/kruskal' : '/api/canvas';
+      },
       timeString() {
         return this.formatTime(this.time);
       },

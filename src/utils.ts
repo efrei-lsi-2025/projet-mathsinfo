@@ -1,11 +1,9 @@
-import { AdjacentStation, Station } from "./types";
-
 function getMetroColor(line: string) {
   switch (line) {
     case "1":
       return "#ffcd00";
     case "2":
-      return "#003da5";
+      return "#003df5";
     case "3":
       return "#827a04";
     case "3bis":

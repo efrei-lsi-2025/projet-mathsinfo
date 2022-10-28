@@ -312,8 +312,8 @@
               :d="ligneEdgesAnimation[ligne]?.pathVertices" />
           </g>
           <g>
-            <circle v-for="station in stations" :key="station.num" style="cursor: pointer" :cx="station.lat"
-              :cy="station.lng" r="3" :class="{ 'map-pulse-animation': station.num === start || station.num === end }"
+            <circle v-for="station in stations" :key="station.num" style="cursor: pointer" :cx="station.posX"
+              :cy="station.posY" r="3" :class="{ 'map-pulse-animation': station.num === start || station.num === end }"
               :stroke="station.num === start || station.num === end ? 'orange' : 'black'"
               :stroke-width="station.num === start || station.num === end ? 3 : 1"
               :fill="station.num === start || station.num === end ? 'orange' : 'white'"
@@ -486,19 +486,18 @@
       },
       getPathVerticesForLigne(ligne) {
         let ligneVertices = this.vertices.filter((vertex) => vertex.ligne === ligne);
-        return ligneVertices.length > 0 ? `M${ligneVertices[0].lat},${ligneVertices[0].lng} ` + ligneVertices
+        return ligneVertices.length > 0 ? `M${ligneVertices[0].posX},${ligneVertices[0].posY} ` + ligneVertices
           .slice(1)
           .map((vert, i) => {
-            return `L${vert.lat},${vert.lng}`;
+            return `L${vert.posX},${vert.posY}`;
           })
           .join(' ') : ``;
       },
       getLengthOfLigne(ligne) {
-        // length calculated with lat/lng
         let ligneVertices = this.vertices.filter((vertex) => vertex.ligne === ligne);
         let length = 0;
         for (let i = 0; i < ligneVertices.length - 1; i++) {
-          length += Math.sqrt(Math.pow(ligneVertices[i].lat - ligneVertices[i + 1].lat, 2) + Math.pow(ligneVertices[i].lng - ligneVertices[i + 1].lng, 2));
+          length += Math.sqrt(Math.pow(ligneVertices[i].posX - ligneVertices[i + 1].posX, 2) + Math.pow(ligneVertices[i].posY - ligneVertices[i + 1].posY, 2));
         }
         return length;
       },
@@ -544,8 +543,8 @@
           return {
             num: station.num,
             nom: station.nom,
-            lat: station.lat,
-            lng: station.lng,
+            posX: station.posX,
+            posY: station.posY,
             color: station.couleurLigne,
             ligne: station.ligne,
           };

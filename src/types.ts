@@ -4,8 +4,8 @@
 export type Gare = {
   nom: string;
   lignes: string[];
-  lat?: number;
-  lng?: number;
+  posX?: number;
+  posY?: number;
 };
 
 export type Intergare = {
@@ -23,8 +23,8 @@ export type Station = {
   ligne: string;
   terminus: boolean;
   branchement: number;
-  lat?: number;
-  lng?: number;
+  posX?: number;
+  posY?: number;
   adjacentStations: AdjacentStation[];
 };
 

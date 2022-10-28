@@ -94,16 +94,16 @@ async function readAndParseData() {
     );
     if (stationsFound.length > 0) {
       for (let j in stationsFound) {
-        stationsFound[j].lat = parseInt(lineSplit[0]);
-        stationsFound[j].lng = parseInt(lineSplit[1]);
+        stationsFound[j].posX = parseInt(lineSplit[0]);
+        stationsFound[j].posY = parseInt(lineSplit[1]);
       }
     }
     let gare = gares.find(
       (g) => g.nom === lineSplit[2].replace(/@/g, " ").trim()
     );
     if (gare) {
-      gare.lat = parseInt(lineSplit[0]);
-      gare.lng = parseInt(lineSplit[1]);
+      gare.posX = parseInt(lineSplit[0]);
+      gare.posY = parseInt(lineSplit[1]);
     }
   }
 
@@ -126,12 +126,12 @@ async function createMapCanvas(inters: Intergare[]) {
     canvasCtx.beginPath();
     if (inters[i].gare_1 && inters[i].gare_2) {
       canvasCtx.moveTo(
-        inters[i].gare_1.lat,
-        inters[i].gare_1.lng
+        inters[i].gare_1.posX,
+        inters[i].gare_1.posY
       );
       canvasCtx.lineTo(
-        inters[i].gare_2.lat,
-        inters[i].gare_2.lng
+        inters[i].gare_2.posX,
+        inters[i].gare_2.posY
       );
       canvasCtx.strokeStyle = getMetroColor(inters[i].ligne);
       canvasCtx.stroke();
@@ -142,18 +142,18 @@ async function createMapCanvas(inters: Intergare[]) {
   for (let i in gares) {
     if (gares[i].lignes && gares[i].lignes.length > 1) {
       canvasCtx.beginPath();
-      canvasCtx.arc(gares[i].lat, gares[i].lng, 4, 0, 2 * Math.PI);
+      canvasCtx.arc(gares[i].posX, gares[i].posY, 4, 0, 2 * Math.PI);
       canvasCtx.fillStyle = "black";
       canvasCtx.fill();
 
       canvasCtx.beginPath();
-      canvasCtx.arc(gares[i].lat, gares[i].lng, 3, 0, 2 * Math.PI);
+      canvasCtx.arc(gares[i].posX, gares[i].posY, 3, 0, 2 * Math.PI);
       canvasCtx.fillStyle = "white";
       canvasCtx.fill();
     } else {
       drawnGares.push(gares[i]);
       canvasCtx.beginPath();
-      canvasCtx.arc(gares[i].lat, gares[i].lng, 3, 0, 2 * Math.PI);
+      canvasCtx.arc(gares[i].posX, gares[i].posY, 3, 0, 2 * Math.PI);
       canvasCtx.fillStyle = getMetroColor(gares[i].lignes[0]);
       canvasCtx.fill();
     }
@@ -231,7 +231,7 @@ const kruskal = () => {
   console.log(`Kruskal: Starting...`);
   let dt = new Date().getTime();
 
-  let garesCopy = [...gares.map((g) => ({ nom: g.nom, lignes: g.lignes, lat: g.lat, lng: g.lng }))];
+  let garesCopy = [...gares.map((g) => ({ nom: g.nom, lignes: g.lignes, posX: g.posX, posY: g.posY }))];
   let intergaresCopy = [...intergares.map((i) => ({ gare_1: garesCopy.find((g) => g.nom === i.gare_1.nom), gare_2: garesCopy.find((g) => g.nom === i.gare_2.nom), ligne: i.ligne, time: i.time }))];
 
   let ACPM: Intergare[] = [];
@@ -293,8 +293,8 @@ async function main() {
         ligne: s.ligne,
         terminus: s.terminus,
         branchement: s.branchement,
-        lat: s.lat,
-        lng: s.lng,
+        posX: s.posX,
+        posY: s.posY,
         adjacentStations: s.adjacentStations.map(
           (s) => { return { num: s.station.num, nom: s.station.nom, ligne: s.station.ligne, branchement: s.station.branchement || 0, correspondance: s.time } }
         ),
@@ -343,8 +343,8 @@ async function main() {
           couleurLigne: getMetroColor(s.ligne),
           terminus: s.terminus,
           branchement: s.branchement,
-          lat: s.lat,
-          lng: s.lng,
+          posX: s.posX,
+          posY: s.posY,
           adjacentStations: s.adjacentStations.map(
             (s) => { return { num: s.station.num, nom: s.station.nom, ligne: s.station.ligne, correspondance: s.time } }
           ),

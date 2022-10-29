@@ -239,15 +239,17 @@ const kruskal = () => {
 
   intergaresCopy.sort((a, b) => a.time - b.time);
 
-  for (let i in intergaresCopy) {
-    ACPM.makeSet(intergaresCopy[i].gare_1);
-    ACPM.makeSet(intergaresCopy[i].gare_2);
+  for (let i in garesCopy) {
+    ACPM.makeSet(garesCopy[i]);
   }
 
   for (let i in intergaresCopy) {
-    if (ACPM.find(intergaresCopy[i].gare_1) !== ACPM.find(intergaresCopy[i].gare_2)) {
+    let gare1 = ACPM.find(intergaresCopy[i].gare_1);
+    let gare2 = ACPM.find(intergaresCopy[i].gare_2);
+
+    if (gare1 !== gare2) {
       arbre.push(intergaresCopy[i]);
-      ACPM.union(ACPM.find(intergaresCopy[i].gare_1), ACPM.find(intergaresCopy[i].gare_2));
+      ACPM.union(gare1, gare2);
     }
   }
 

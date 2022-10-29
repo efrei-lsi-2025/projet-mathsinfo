@@ -1,6 +1,6 @@
 import fs from "fs";
 import { AdjacentStation, Gare, Intergare, Station } from "./types";
-import { getMetroColor } from "./utils";
+import { getMetroColor, KruskalSet } from "./utils";
 
 import canvasLibrary from "canvas";
 
@@ -231,34 +231,30 @@ const kruskal = () => {
   console.log(`Kruskal: Starting...`);
   let dt = new Date().getTime();
 
-  let garesCopy = [...gares.map((g) => ({ nom: g.nom, lignes: g.lignes, posX: g.posX, posY: g.posY }))];
-  let intergaresCopy = [...intergares.map((i) => ({ gare_1: garesCopy.find((g) => g.nom === i.gare_1.nom), gare_2: garesCopy.find((g) => g.nom === i.gare_2.nom), ligne: i.ligne, time: i.time }))];
+  const garesCopy = [...gares.map((g) => ({ nom: g.nom, lignes: g.lignes, posX: g.posX, posY: g.posY }))];
+  const intergaresCopy = [...intergares.map((i) => ({ gare_1: garesCopy.find((g) => g.nom === i.gare_1.nom), gare_2: garesCopy.find((g) => g.nom === i.gare_2.nom), ligne: i.ligne, time: i.time }))];
 
-  let ACPM: Intergare[] = [];
+  const arbre: Intergare[] = [];
+  const ACPM = new KruskalSet();
 
   intergaresCopy.sort((a, b) => a.time - b.time);
 
   for (let i in intergaresCopy) {
-    let gare1 = garesCopy.find((g) => g.nom === intergaresCopy[i].gare_1.nom);
-    let gare2 = garesCopy.find((g) => g.nom === intergaresCopy[i].gare_2.nom);
+    ACPM.makeSet(intergaresCopy[i].gare_1);
+    ACPM.makeSet(intergaresCopy[i].gare_2);
+  }
 
-    if (gare1 && gare2 && gare1.nom !== gare2.nom) {
-      ACPM.push(intergaresCopy[i]);
-
-      let gare1Nom = gare1.nom;
-      let gare2Nom = gare2.nom;
-
-      for (let j in garesCopy) {
-        if (garesCopy[j].nom === gare2Nom) {
-          garesCopy[j].nom = gare1Nom;
-        }
-      }
+  for (let i in intergaresCopy) {
+    if (ACPM.find(intergaresCopy[i].gare_1) !== ACPM.find(intergaresCopy[i].gare_2)) {
+      arbre.push(intergaresCopy[i]);
+      ACPM.union(ACPM.find(intergaresCopy[i].gare_1), ACPM.find(intergaresCopy[i].gare_2));
     }
   }
 
   console.log(`Kruskal: Done in ${new Date().getTime() - dt}ms.`);
-  console.log(`Kruskal: ${ACPM.length} intergares in the ACPM with a ${ACPM.reduce((a, b) => a + b.time, 0)}s total time.`);
-  return ACPM;
+  console.log(`Kruskal: ${arbre.length} intergares in the ACPM with a ${arbre.reduce((a, b) => a + b.time, 0)}s total time.`);
+
+  return arbre;
 }
 
 async function main() {
@@ -268,7 +264,7 @@ async function main() {
   const router = express.Router();
 
   router.get("/", (req: any, res: any) => {
-    res.send("Hello World!");
+    res.json({ message: "Bienvenue sur l'API RATP Itinéraires.", routes: ["/stations", "/canvas", "/path/:s1/:s2", "/kruskal"] });
   });
 
   router.get("/canvas", async (req: any, res: any) => {
@@ -359,7 +355,7 @@ async function main() {
   app.use("/api", router);
 
   app.listen(port, () => {
-    console.log(`Express: RATP Itinéraires @ http://localhost:${port}`);
+    console.log(`Express: Le serveur est prêt: http://localhost:${port}`);
   });
 }
 

@@ -1,0 +1,10 @@
+{
+  "name": "@metro-boulot-dodo/dijkstra",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "dependencies": {
+    "@metro-boulot-dodo/tsconfig": "^1.0.0"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "packages/database"
+    },
+    {
+      "path": "packages/tsconfig"
+    },
+    {
+      "path": "packages/utils"
+    },
+    {
+      "path": "packages/proto"
+    },
+    {
+      "path": "applications/canvas"
+    },
+    {
+      "path": "applications/data"
+    },
+    {
+      "path": "applications/dijkstra"
+    },
+    {
+      "path": "applications/kruskal"
+    }
+  ]
+}

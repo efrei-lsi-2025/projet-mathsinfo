@@ -1,0 +1,13 @@
+{
+  "name": "@metro-boulot-dodo/utils",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@metro-boulot-dodo/tsconfig": "^1.0.0"
+  }
+}

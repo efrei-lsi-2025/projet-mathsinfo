@@ -1,45 +1,59 @@
-name: Build and Publish
+name: Build & push
 
 on:
-  # run it on push to the default repository branch
   push:
-    branches: [master]
-  # run it during pull request
-  pull_request:
+    branches:
+      - "master"
+      - "k8s"
 
 jobs:
-  # define job to build and publish docker image
-  build-and-push-docker-image:
-    name: Build Docker image and push to repositories
-    # run only when code is compiling and tests are passing
+  build-and-push-image:
     runs-on: ubuntu-latest
-
-    # steps to perform in job
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - image: ghcr.io/${{ github.repository }}-front
+            context: ./front
+            dockerfile: ./front/Dockerfile
+          - image: ghcr.io/${{ github.repository }}-back
+            context: ./back
+            dockerfile: ./back/Dockerfile
+          - image: ghcr.io/${{ github.repository }}-authentik-db
+            context: ./init-db/authentik
+            dockerfile: ./init-db/authentik/Dockerfile
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: "Checkout GitHub Action"
+        uses: actions/checkout@main
 
-      # setup Docker buld action
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v1
 
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
+      - name: "Login to GitHub Container Registry"
+        uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
-      - name: Build image and push to Docker Hub and GitHub Container Registry
-        uses: docker/build-push-action@v2
-        with:
-          # relative path to the place where source code with Dockerfile is located
-          context: .
-          # Note: tags has to be all lower-case
-          tags: |
-            jiveoff/projet-mathsinfo:latest
-          # build on feature branches, push only on main branch
-          push: ${{ github.ref == 'refs/heads/master' }}
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
 
-      - name: Image digest
-        run: echo ${{ steps.docker_build.outputs.digest }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ matrix.image }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          platforms: linux/amd64,linux/arm64/v8
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          push: true

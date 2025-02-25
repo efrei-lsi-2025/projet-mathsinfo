@@ -1,0 +1,64 @@
+# Application
+
+logefrei:
+    namespace: logefrei
+    host: logefrei.k8s.orb.local
+
+    authentik:
+        url: authentik.k8s.orb.local
+        outpostName: logefrei
+        outpostToken: "authentik-outpost-token"
+
+    database:
+        secret: app-db-secret
+        user: postgres
+        password: postgres
+        database: postgres
+
+    front:
+        image:
+            repository: ghcr.io/efrei-lsi-2025/logefrei-front
+            tag: k8s
+        replicas: 2
+
+    back:
+        image:
+            repository: ghcr.io/efrei-lsi-2025/logefrei-back
+            tag: k8s
+
+        services:
+            - name: bookings
+              replicas: 2
+            - name: search
+              replicas: 2
+            - name: housings
+              replicas: 2
+            - name: users
+              replicas: 2
+
+# Authentik
+
+authentik:
+    namespaceOverride: logefrei
+
+    authentik:
+        secret_key: "authentik-long-secret-key"
+        postgresql:
+            password: "postgres"
+
+    server:
+        ingress:
+            enabled: true
+            hosts:
+                - authentik.k8s.orb.local
+
+    postgresql:
+        enabled: true
+        image:
+            repository: ghcr.io/efrei-lsi-2025/logefrei-authentik-db
+            tag: k8s
+        auth:
+            password: "postgres"
+
+    redis:
+        enabled: true

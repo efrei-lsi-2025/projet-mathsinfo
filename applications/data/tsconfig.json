@@ -1,0 +1,7 @@
+{
+  "extends": "@metro-boulot-dodo/tsconfig/tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  }
+}

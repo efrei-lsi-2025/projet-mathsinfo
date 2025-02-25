@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package metro_boulot_dodo.data;
+
+message Ligne {
+  string nom = 1;
+  string couleur = 2;
+}
+
+message Gare {
+  string nom = 1;
+  repeated Ligne lignes = 2;
+  int32 posX = 3;
+  int32 posY = 4;
+}
+
+message Intergare {
+  Gare gare_1 = 1;
+  Gare gare_2 = 2;
+  int32 time = 3;
+  Ligne ligne = 4;
+}
+
+message AdjacentStation {
+  int32 time = 1;
+  Station station = 2;
+}
+
+message Station {
+  int32 num = 1;
+  string nom = 2;
+  Ligne ligne = 3;
+  bool terminus = 4;
+  int32 branchement = 5;
+  int32 posX = 6;
+  int32 posY = 7;
+  repeated AdjacentStation adjacentStations = 8;
+}
+
+message Gares {
+    repeated Gare gares = 1;
+}
+
+message Intergares {
+    repeated Intergare intergares = 1;
+}
+
+message Stations {
+    repeated Station stations = 1;
+}
+
+message Lignes {
+    repeated Ligne lignes = 1;
+}

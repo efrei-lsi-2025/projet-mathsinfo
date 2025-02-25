@@ -1,0 +1,152 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: {{ $.Values.logefrei.namespace }}
+  name: migrate-job
+  labels:
+    app: migrate-job
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: wait-for-database
+          image: busybox
+          command: ['sh', '-c', 'until nc -z -v -w30 postgres.logefrei 5432; do echo waiting for database; sleep 5; done']
+      containers:
+        - name: migrate
+          image: "{{ $.Values.logefrei.back.image.repository }}-full:{{ $.Values.logefrei.back.image.tag }}"
+          command: ["sh", "-c", "bunx prisma migrate deploy"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.logefrei.database.secret }}
+                  key: DATABASE_URL
+      restartPolicy: Never
+  backoffLimit: 1
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: {{ $.Values.logefrei.namespace }}
+  name: job-reader
+rules:
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: {{ $.Values.logefrei.namespace }}
+  name: read-jobs
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: job-reader
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: {{ $.Values.logefrei.namespace }}
+{{- range .Values.logefrei.back.services }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ $.Values.logefrei.namespace }}
+  name: {{ .name }}
+  labels:
+    app: {{ .name }}
+    version: {{ $.Chart.AppVersion }}
+spec:
+  replicas: {{ .replicas }}
+  selector:
+    matchLabels:
+      app: {{ .name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .name }}
+    spec:
+      initContainers:
+        - name: wait-for-migration
+          image: bitnami/kubectl
+          command: ['sh', '-c', 'until kubectl get job migrate-job -n {{ $.Values.logefrei.namespace }} -o jsonpath="{.status.succeeded}" | grep 1; do echo waiting for migration job to complete; sleep 5; done']
+      containers:
+        - name: {{ .name }}
+          image: "{{ $.Values.logefrei.back.image.repository }}-slim:{{ $.Values.logefrei.back.image.tag }}"
+          imagePullPolicy: Always
+          env:
+            - name: SERVICE
+              value: {{ .name }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.logefrei.database.secret }}
+                  key: DATABASE_URL
+            - name: PORT
+              value: "3000"
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              memory: "512Mi"
+            limits:
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 1
+            failureThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ $.Values.logefrei.namespace }}
+  name: {{ .name }}
+  labels:
+    app: {{ .name }}
+    version: {{ $.Chart.AppVersion }}
+spec:
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: {{ .name }}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: {{ $.Values.logefrei.namespace }}
+  name: {{ .name }}
+  labels:
+    app: {{ .name }}
+    version: {{ $.Chart.AppVersion }}
+spec:
+  routes:
+    - match: Host(`{{ $.Values.logefrei.host }}`) && PathPrefix(`/api/{{ .name }}`)
+      kind: Rule
+      services:
+        - name: {{ .name }}
+          port: 3000
+      middlewares:
+        - name: ak-outpost-authentik-embedded-outpost
+    {{- if eq .name "bookings" }}
+    - match: Host(`{{ $.Values.logefrei.host }}`) && PathPrefix(`/docs`)
+      kind: Rule
+      services:
+        - name: {{ .name }}
+          port: 3000
+      middlewares:
+        - name: ak-outpost-authentik-embedded-outpost
+    {{- end }}
+{{- end }}

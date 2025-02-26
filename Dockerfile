@@ -20,6 +20,7 @@ COPY . .
 
 RUN npm ci
 
+RUN npm run proto
 RUN npm run db:generate
 
 EXPOSE 3000

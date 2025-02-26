@@ -1,4 +1,10 @@
-import { ChannelCredentials, Server } from '@grpc/grpc-js';
+import {
+  ChannelCredentials,
+  Server,
+  ServerCredentials,
+  ServiceDefinition,
+  UntypedServiceImplementation
+} from '@grpc/grpc-js';
 import { loadSync } from '@grpc/proto-loader';
 import { ReflectionService } from '@grpc/reflection';
 import { GrpcTransport } from '@protobuf-ts/grpc-transport';
@@ -32,13 +38,30 @@ export const clients = {
   )
 };
 
-export const setupReflection = (server: Server) => {
+export const setupServer = (
+  service: ServiceDefinition,
+  implementation: UntypedServiceImplementation
+) => {
+  const host = process.env.HOST || '0.0.0.0:3000';
+
+  const server = new Server();
+  server.addService(service, implementation);
+
   const packageDefinition = loadSync(
     path.join(__dirname, '../protos/data.proto')
   );
 
   const reflection = new ReflectionService(packageDefinition);
   reflection.addToServer(server);
+
+  server.bindAsync(host, ServerCredentials.createInsecure(), err => {
+    if (err) {
+      console.error(err);
+      process.exit(1);
+    }
+
+    console.log(`Server listening on ${host}`);
+  });
 };
 
 export * from '@grpc/grpc-js';

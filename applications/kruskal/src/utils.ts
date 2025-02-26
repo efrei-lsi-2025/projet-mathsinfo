@@ -1,6 +1,6 @@
 class UnionFindSet {
   private parent: number[] = [];
-  private size = 0;
+  private size: number = 0;
 
   constructor(size?: number) {
     this.size = size || 0;
@@ -34,26 +34,26 @@ class UnionFindSet {
   }
 }
 
-export class KruskalSet {
-  private position = new Map();
-  private disjointSetArray = new UnionFindSet();
-  private elements = [];
+export class KruskalSet<T> {
+  private position: Map<T, number> = new Map();
+  private disjointSetArray: UnionFindSet = new UnionFindSet();
+  private elements: T[] = [];
 
-  makeSet(element) {
+  makeSet(element: T): void {
     if (this.position.has(element)) return;
     const index = this.disjointSetArray.makeSet();
     this.position.set(element, index);
     this.elements.push(element);
   }
 
-  find(element) {
+  find(element: T): T | undefined {
     const index = this.position.get(element);
-    if (index === undefined) return;
+    if (index === undefined) return undefined;
     const p = this.disjointSetArray.find(index);
     return this.elements[p];
   }
 
-  union(element1, element2) {
+  union(element1: T, element2: T): void {
     const index1 = this.position.get(element1);
     const index2 = this.position.get(element2);
     if (index1 === undefined || index2 === undefined) return;

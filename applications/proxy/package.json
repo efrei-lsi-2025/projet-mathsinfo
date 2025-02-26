@@ -1,0 +1,16 @@
+{
+  "name": "@metro-boulot-dodo/proxy",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@metro-boulot-dodo/proto": "^1.0.0",
+    "@metro-boulot-dodo/tsconfig": "^1.0.0",
+    "fastify": "^5.2.1"
+  }
+}

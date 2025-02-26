@@ -1,6 +1,9 @@
 syntax = "proto3";
 
-package metro_boulot_dodo.data;
+package metro_boulot_dodo;
+
+message Empty {
+}
 
 message Ligne {
   string nom = 1;
@@ -51,4 +54,42 @@ message Stations {
 
 message Lignes {
     repeated Ligne lignes = 1;
+}
+
+service DataService {
+    rpc GetGares (Empty) returns (Gares);
+    rpc GetIntergares (Empty) returns (Intergares);
+    rpc GetStations (Empty) returns (Stations);
+    rpc GetLignes (Empty) returns (Lignes);
+}
+
+message ShortestPathRequest {
+    Station start = 1;
+    Station end = 2;
+}
+
+message ShortestPathResponse {
+    repeated Station path = 1;
+    int32 time = 2;
+}
+
+service DijkstraService {
+    rpc GetShortestPath (ShortestPathRequest) returns (ShortestPathResponse);
+}
+
+service KruskalService {
+    rpc GetMinimumSpanningTree (Empty) returns (Image);
+    rpc GetFullTree (Empty) returns (Image);
+}
+
+message CanvasDrawRequest {
+    repeated Intergare intergares = 1;
+}
+
+service CanvasService {
+    rpc GetCanvas (CanvasDrawRequest) returns (Image);
+}
+
+message Image {
+    bytes data = 1;
 }

@@ -5,18 +5,20 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "compile": "tsc"
+    "compile": "tsc",
+    "db:push": "npx prisma db push",
+    "db:generate": "npx prisma generate",
+    "seed": "ts-node src/scripts/seed.ts"
   },
   "license": "MIT",
   "dependencies": {
+    "@prisma/client": "^6.4.1",
     "dotenv": "^16.4.7",
-    "drizzle-orm": "^0.39.3",
     "pg": "^8.13.3"
   },
   "devDependencies": {
-    "@types/pg": "^8.11.11",
-    "drizzle-kit": "^0.30.4",
-    "tsx": "^4.19.3",
-    "@metro-boulot-dodo/tsconfig": "^1.0.0"
+    "@metro-boulot-dodo/tsconfig": "^1.0.0",
+    "prisma": "^6.4.1",
+    "tsx": "^4.19.3"
   }
 }

@@ -1,53 +1,22 @@
-import { Intergare } from '@metro-boulot-dodo/proto';
-import { KruskalSet } from './utils';
+import { Server, ServerCredentials } from '@grpc/grpc-js';
+import {
+  kruskalServiceDefinition,
+  setupReflection
+} from '@metro-boulot-dodo/proto';
+import { kruskalService } from './service';
 
-export const kruskal = () => {
-  console.log(`Kruskal: Starting...`);
-  let dt = new Date().getTime();
+const host = process.env.HOST || '0.0.0.0:3000';
 
-  const garesCopy = [
-    ...gares.map(g => ({
-      nom: g.nom,
-      lignes: g.lignes,
-      posX: g.posX,
-      posY: g.posY
-    }))
-  ];
-  const intergaresCopy = [
-    ...intergares.map(i => ({
-      gare_1: garesCopy.find(g => g.nom === i.gare_1.nom),
-      gare_2: garesCopy.find(g => g.nom === i.gare_2.nom),
-      ligne: i.ligne,
-      time: i.time
-    }))
-  ];
+const server = new Server();
+server.addService(kruskalServiceDefinition, kruskalService);
 
-  const arbre: Intergare[] = [];
-  const ACPM = new KruskalSet();
+setupReflection(server);
 
-  intergaresCopy.sort((a, b) => a.time - b.time);
-
-  for (let i in garesCopy) {
-    ACPM.makeSet(garesCopy[i]);
+server.bindAsync(host, ServerCredentials.createInsecure(), err => {
+  if (err) {
+    console.error(err);
+    process.exit(1);
   }
 
-  for (let i in intergaresCopy) {
-    let gare1 = ACPM.find(intergaresCopy[i].gare_1);
-    let gare2 = ACPM.find(intergaresCopy[i].gare_2);
-
-    if (gare1 !== gare2) {
-      arbre.push(intergaresCopy[i]);
-      ACPM.union(gare1, gare2);
-    }
-  }
-
-  console.log(`Kruskal: Done in ${new Date().getTime() - dt}ms.`);
-  console.log(
-    `Kruskal: ${arbre.length} intergares in the ACPM with a ${arbre.reduce(
-      (a, b) => a + b.time,
-      0
-    )}s total time.`
-  );
-
-  return arbre;
-};
+  console.log(`Server listening on ${host}`);
+});

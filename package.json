@@ -2,17 +2,27 @@
   "name": "metro-boulot-dodo",
   "private": true,
   "scripts": {
-    "build": "tsc --build --verbose tsconfig.build.json",
-    "clean": "rimraf -g \"packages/**/dist\" \"applications/**/dist\" \"packages/**/*.tsbuildinfo\" \"applications/**/*.tsbuildinfo\""
+    "proto-generate": "cd packages/proto && npm run generate",
+    "build": "npm run clean && npm run proto-generate && tsc --build --verbose tsconfig.build.json",
+    "clean": "rimraf -g \"packages/**/dist\" \"applications/**/dist\" \"packages/**/*.tsbuildinfo\" \"applications/**/*.tsbuildinfo\"",
+    "start:canvas": "cd applications/canvas && tsx src/index.ts",
+    "start:data": "cd applications/data && tsx src/index.ts",
+    "start:kruskal": "cd applications/kruskal && tsx src/index.ts",
+    "start:dijkstra": "cd applications/dijkstra && tsx src/index.ts",
+    "start:proxy": "cd applications/proxy && tsx src/index.ts",
+    "db:generate": "cd packages/database && npm run db:generate"
   },
   "devDependencies": {
     "@types/node": "^20.6.0",
+    "rimraf": "^6.0.1",
     "ts-node": "^10.9.1",
-    "typescript": "^5.2.2",
-    "rimraf": "^6.0.1"
+    "typescript": "^5.2.2"
   },
   "workspaces": [
     "packages/*",
     "applications/*"
-  ]
+  ],
+  "dependencies": {
+    "tsx": "^4.19.3"
+  }
 }

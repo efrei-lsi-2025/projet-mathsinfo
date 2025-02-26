@@ -1,0 +1,69 @@
+services:
+  postgres:
+    build:
+      context: ./init-db/app
+      dockerfile: Dockerfile
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - '5432:5432'
+
+  canvas:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: npm run start:canvas
+
+  data:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: npm run start:data
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/postgres
+
+  dijkstra:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: npm run start:dijkstra
+
+  kruskal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: npm run start:kruskal
+
+  proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: npm run start:proxy
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.proxy.rule=PathPrefix(`/api`)'
+      - 'traefik.http.services.proxy.loadbalancer.server.port=3000'
+
+  front:
+    build:
+      context: ./applications/front
+      dockerfile: Dockerfile
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.front.rule=PathPrefix(`/`)'
+
+  traefik:
+    image: traefik:v3.3.4
+    container_name: traefik
+    command:
+      - '--api.insecure=true'
+      - '--providers.docker=true'
+      - '--entrypoints.web.address=:80'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    ports:
+      - '80:80'
+      - '8080:8080'

@@ -1,51 +1,22 @@
-import { Gare, Intergare } from '@metro-boulot-dodo/proto';
-import { getMetroColor } from '@metro-boulot-dodo/utils';
-import canvasLibrary from 'canvas';
+import { Server, ServerCredentials } from '@grpc/grpc-js';
+import {
+  canvasServiceDefinition,
+  setupReflection
+} from '@metro-boulot-dodo/proto';
+import { canvasService } from './service';
 
-export async function createMapCanvas(inters: Intergare[]) {
-  const canvas = canvasLibrary.createCanvas(987, 952);
-  const canvasCtx = canvas.getContext('2d');
+const host = process.env.HOST || '0.0.0.0:3000';
 
-  const image = await canvasLibrary.loadImage('./docs/metrof_r.png');
-  canvasCtx.globalAlpha = 0.1;
-  canvasCtx.drawImage(image, 0, 0, 987, 952);
-  canvasCtx.globalAlpha = 1;
+const server = new Server();
+server.addService(canvasServiceDefinition, canvasService);
 
-  console.log(
-    `Canvas: Drawing ${inters.length} intergares and ${stations.length} stations.`
-  );
+setupReflection(server);
 
-  // draw line between stations
-  for (let i in inters) {
-    canvasCtx.beginPath();
-    if (inters[i].gare_1 && inters[i].gare_2) {
-      canvasCtx.moveTo(inters[i].gare_1.posX, inters[i].gare_1.posY);
-      canvasCtx.lineTo(inters[i].gare_2.posX, inters[i].gare_2.posY);
-      canvasCtx.strokeStyle = getMetroColor(inters[i].ligne);
-      canvasCtx.stroke();
-    }
+server.bindAsync(host, ServerCredentials.createInsecure(), err => {
+  if (err) {
+    console.error(err);
+    process.exit(1);
   }
 
-  let drawnGares: Gare[] = [];
-  for (let i in gares) {
-    if (gares[i].lignes && gares[i].lignes.length > 1) {
-      canvasCtx.beginPath();
-      canvasCtx.arc(gares[i].posX, gares[i].posY, 4, 0, 2 * Math.PI);
-      canvasCtx.fillStyle = 'black';
-      canvasCtx.fill();
-
-      canvasCtx.beginPath();
-      canvasCtx.arc(gares[i].posX, gares[i].posY, 3, 0, 2 * Math.PI);
-      canvasCtx.fillStyle = 'white';
-      canvasCtx.fill();
-    } else {
-      drawnGares.push(gares[i]);
-      canvasCtx.beginPath();
-      canvasCtx.arc(gares[i].posX, gares[i].posY, 3, 0, 2 * Math.PI);
-      canvasCtx.fillStyle = getMetroColor(gares[i].lignes[0]);
-      canvasCtx.fill();
-    }
-  }
-
-  return canvas;
-}
+  console.log(`Server listening on ${host}`);
+});

@@ -1,0 +1,22 @@
+export const lignes = [
+  { nom: '1', couleur: '#ffcd00' },
+  { nom: '2', couleur: '#003df5' },
+  { nom: '3', couleur: '#827a04' },
+  { nom: '3bis', couleur: '#71c5e8' },
+  { nom: '4', couleur: '#c800a1' },
+  { nom: '5', couleur: '#ff7f32' },
+  { nom: '6', couleur: '#71cc98' },
+  { nom: '7', couleur: '#f59bbb' },
+  { nom: '7bis', couleur: '#71cc98' },
+  { nom: '8', couleur: '#dd9cdf' },
+  { nom: '9', couleur: '#b5bd00' },
+  { nom: '10', couleur: '#c69214' },
+  { nom: '11', couleur: '#6e4c1e' },
+  { nom: '12', couleur: '#007a53' },
+  { nom: '13', couleur: '#71c5e8' },
+  { nom: '14', couleur: '#5f259f' },
+  { nom: '15', couleur: '#a50034' },
+  { nom: '16', couleur: '#f59bbb' },
+  { nom: '17', couleur: '#b5bd00' },
+  { nom: '18', couleur: '#00ab8e' }
+];

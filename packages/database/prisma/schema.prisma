@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Ligne {
+  nom        String      @id
+  couleur    String
+
+  stations   Station[]
+  intergares Intergare[]
+
+  gares      Gare[]      @relation("GareLignes")
+}
+
+model Gare {
+  nom         String      @id
+
+  posX        Int
+  posY        Int
+
+  lignes      Ligne[]     @relation("GareLignes")
+
+  intergares1 Intergare[] @relation("GareOne")
+  intergares2 Intergare[] @relation("GareTwo")
+}
+
+model Intergare {
+  time Int
+
+  gare1    Gare   @relation("GareOne", fields: [gare1Nom], references: [nom], onDelete: Cascade)
+  gare1Nom String
+
+  gare2    Gare   @relation("GareTwo", fields: [gare2Nom], references: [nom], onDelete: Cascade)
+  gare2Nom String
+
+  ligne    Ligne  @relation(fields: [ligneNom], references: [nom], onDelete: Cascade)
+  ligneNom String
+
+  @@id([gare1Nom, gare2Nom, ligneNom])
+}
+
+model Station {
+  num Int @id
+
+  nom         String
+  terminus    Boolean
+  branchement Int
+
+  posX        Int
+  posY        Int
+
+  ligne    Ligne  @relation(fields: [ligneNom], references: [nom], onDelete: Cascade)
+  ligneNom String
+
+  station1 AdjacentStation[] @relation("StationOne")
+  station2 AdjacentStation[] @relation("StationTwo")
+}
+
+model AdjacentStation {
+  time Int
+
+  station1    Station @relation("StationOne", fields: [station1Num], references: [num], onDelete: Cascade)
+  station1Num Int
+
+  station2    Station @relation("StationTwo", fields: [station2Num], references: [num], onDelete: Cascade)
+  station2Num Int
+
+  @@id([station1Num, station2Num])
+}

@@ -1,19 +1,25 @@
 {
   "name": "@metro-boulot-dodo/proto",
   "version": "1.0.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "license": "MIT",
   "exports": {
     ".": "./src/index.ts"
   },
   "scripts": {
-    "generate-index": "find ./src/generated -name '*.ts' ! -name 'index.ts' -print | sed 's|^\\./src/|export * from \"./|' | sed 's|.ts$|\";|' > ./src/index.ts",
+    "generate-index": "find ./src/generated -name '*.ts' ! -name 'index.ts' -print | sed 's|^\\./src/generated/|export * from '\\''./|' | sed 's|.ts$|'\\'';|' > ./src/generated/index.ts",
     "clean": "rimraf src/generated && mkdir -p src/generated",
-    "build": "npm run clean && npx protoc -I=protos protos/*.proto --ts_out=src/generated --ts_opt server_grpc1,client_none,optimize_code_size"
+    "generate": "npm run clean && npx protoc -I=protos protos/*.proto --ts_out=src/generated --ts_opt server_grpc1,optimize_code_size && npm run generate-index"
   },
   "devDependencies": {
-    "@protobuf-ts/plugin": "^2.8.0",
+    "@protobuf-ts/plugin": "^2.9.4",
+    "@protobuf-ts/protoc": "^2.9.4",
+    "@protobuf-ts/runtime": "^2.9.4",
+    "@protobuf-ts/runtime-rpc": "^2.9.4",
     "rimraf": "^6.0.1"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.12.6",
+    "@protobuf-ts/grpc-transport": "^2.9.4",
+    "@grpc/proto-loader": "^0.7.13",
+    "@grpc/reflection": "^1.0.4"
   }
 }

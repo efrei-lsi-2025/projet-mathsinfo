@@ -1,595 +1,777 @@
 <html>
+  <head>
+    <title>Itinéraire RATP - Projet Maths Info</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
+    />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;500&display=swap');
 
-<head>
-  <title>Itinéraire RATP - Projet Maths Info</title>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css" />
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;500&display=swap');
-
-    body,
-    h1 {
-      font-family: 'Nunito', sans-serif !important;
-      font-weight: 300;
-    }
-
-    @media screen and (min-width: 1200px) {
-      .container {
-        max-width: 85vw;
+      body,
+      h1 {
+        font-family: 'Nunito', sans-serif !important;
+        font-weight: 300;
       }
-    }
 
-    h1 {
-      font-weight: 500;
-    }
+      @media screen and (min-width: 1200px) {
+        .container {
+          max-width: 85vw;
+        }
+      }
 
-    .st0 {
-      fill: none;
-    }
+      h1 {
+        font-weight: 500;
+      }
 
-    .itineraire {
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      gap: 30px;
-    }
+      .st0 {
+        fill: none;
+      }
 
-    @media screen and (max-width: 700px) {
       .itineraire {
-        flex-direction: column-reverse;
-      }
-    }
-
-    .itineraire form {
-      flex: 0.4;
-      width: 100%;
-    }
-
-    .itineraire .map {
-      position: relative;
-      max-height: 952px;
-    }
-
-    .itineraire svg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      opacity: 0.8;
-      width: 100%;
-      height: 100%;
-    }
-
-    .itineraire .map,
-    .map img {
-      border-radius: 10px;
-      width: 100%;
-      height: 100%;
-      max-height: 952px;
-      max-width: 987px;
-      transition: opacity 0.2s ease;
-    }
-
-    .map.opacity img {
-      opacity: 0.3;
-    }
-
-    .searchAndReset {
-      display: flex;
-      flex-direction: row;
-      gap: 20px;
-    }
-
-    .searchAndReset .reset {
-      flex: .33;
-    }
-
-    .searchAndReset button {
-      width: 100%;
-    }
-
-    .map-pulse-animation {
-      animation: pulse 1s infinite;
-    }
-
-    @keyframes pulse {
-      0% {
-        opacity: 1;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        gap: 30px;
       }
 
-      50% {
-        opacity: 0;
+      @media screen and (max-width: 700px) {
+        .itineraire {
+          flex-direction: column-reverse;
+        }
       }
 
-      100% {
-        opacity: 1;
-      }
-    }
-
-    .pathVertices {
-      fill: transparent;
-      stroke-width: 4;
-
-      stroke-dasharray: var(--stroke-length);
-      stroke-dashoffset: 0;
-    }
-
-    @keyframes dashVert {
-      0% {
-        stroke-dashoffset: var(--stroke-length);
+      .itineraire form {
+        flex: 0.4;
+        width: 100%;
       }
 
-      100% {
+      .itineraire .map {
+        position: relative;
+        max-height: 952px;
+      }
+
+      .itineraire svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0.8;
+        width: 100%;
+        height: 100%;
+      }
+
+      .itineraire .map,
+      .map img {
+        border-radius: 10px;
+        width: 100%;
+        height: 100%;
+        max-height: 952px;
+        max-width: 987px;
+        transition: opacity 0.2s ease;
+      }
+
+      .map.opacity img {
+        opacity: 0.3;
+      }
+
+      .searchAndReset {
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+      }
+
+      .searchAndReset .reset {
+        flex: 0.33;
+      }
+
+      .searchAndReset button {
+        width: 100%;
+      }
+
+      .map-pulse-animation {
+        animation: pulse 1s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+        }
+
+        50% {
+          opacity: 0;
+        }
+
+        100% {
+          opacity: 1;
+        }
+      }
+
+      .pathVertices {
+        fill: transparent;
+        stroke-width: 4;
+
+        stroke-dasharray: var(--stroke-length);
         stroke-dashoffset: 0;
       }
-    }
 
-    .route {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+      @keyframes dashVert {
+        0% {
+          stroke-dashoffset: var(--stroke-length);
+        }
 
-    .route-card {
-      overflow: hidden;
-      background-color: rgba(0, 0, 0, 0.14);
-      padding: 10px;
-      padding-left: 20px;
-      padding-right: 20px;
-      border-radius: 10px;
-      position: relative;
-    }
+        100% {
+          stroke-dashoffset: 0;
+        }
+      }
 
-    .route-card.time strong {
-      font-size: 1.5em;
-      z-index: 50;
-    }
+      .route {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
 
-    .route-card .icon-clock {
-      position: absolute;
-      right: -20px;
-      bottom: -20px;
-      width: 5em;
-      height: 5em;
-      opacity: .5;
-      z-index: 1;
-    }
+      .route-card {
+        overflow: hidden;
+        background-color: rgba(0, 0, 0, 0.14);
+        padding: 10px;
+        padding-left: 20px;
+        padding-right: 20px;
+        border-radius: 10px;
+        position: relative;
+      }
 
-    .route-card .icon-ligne {
-      position: absolute;
-      right: -20px;
-      top: -20px;
-      width: 5em;
-      height: 5em;
-      opacity: .35;
-      z-index: 1;
-    }
+      .route-card.time strong {
+        font-size: 1.5em;
+        z-index: 50;
+      }
 
-    details {
-      margin-top: 12px;
-      margin-bottom: 12px;
-      border-bottom: none;
-      background-color: rgba(0, 0, 0, 0.14);
-      border-radius: 10px;
-      padding: 20px;
-    }
+      .route-card .icon-clock {
+        position: absolute;
+        right: -20px;
+        bottom: -20px;
+        width: 5em;
+        height: 5em;
+        opacity: 0.5;
+        z-index: 1;
+      }
 
-    details[open] summary ~ * {
-      animation: sweep .5s ease-in-out;
-    }
+      .route-card .icon-ligne {
+        position: absolute;
+        right: -20px;
+        top: -20px;
+        width: 5em;
+        height: 5em;
+        opacity: 0.35;
+        z-index: 1;
+      }
 
-    @keyframes sweep {
-      0%    {opacity: 0; margin-top: -20px}
-      100%  {opacity: 1; margin-top: 0px}
-    }
-  </style>
-</head>
+      details {
+        margin-top: 12px;
+        margin-bottom: 12px;
+        border-bottom: none;
+        background-color: rgba(0, 0, 0, 0.14);
+        border-radius: 10px;
+        padding: 20px;
+      }
 
-<body>
-  <main class="container">
-    <div class="itineraire">
-      <div>
-        <form style="margin-bottom: 0">
-          <div class="grid">
-            <label for="start">
-              Départ
-              <select id="start" v-model="start" :disabled="loading || animating">
-                <option v-for="station in stations" :value="station.num">
-                  {{ station.nom }} (Ligne {{ station.ligne }})
-                </option>
-              </select>
+      details[open] summary ~ * {
+        animation: sweep 0.5s ease-in-out;
+      }
+
+      @keyframes sweep {
+        0% {
+          opacity: 0;
+          margin-top: -20px;
+        }
+        100% {
+          opacity: 1;
+          margin-top: 0px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="container">
+      <div class="itineraire">
+        <div>
+          <form style="margin-bottom: 0">
+            <div class="grid">
+              <label for="start">
+                Départ
+                <select
+                  id="start"
+                  v-model="start"
+                  :disabled="loading || animating"
+                >
+                  <option v-for="station in stations" :value="station.num">
+                    {{ station.nom }} (Ligne {{ station.ligne.nom }})
+                  </option>
+                </select>
+              </label>
+              <label for="end">
+                Arrivée
+                <select
+                  id="end"
+                  v-model="end"
+                  :disabled="start === -1 || loading || animating"
+                >
+                  <option
+                    v-for="station in stations.filter((station) => start !== -1 && station.num + 1 !== start + 1)"
+                    :value="station.num"
+                  >
+                    {{ station.nom }} (Ligne {{ station.ligne.nom }})
+                  </option>
+                </select>
+              </label>
+            </div>
+
+            <div class="searchAndReset">
+              <button
+                type="button"
+                @click="search"
+                :aria-busy="loading || animating"
+                :class="{secondary: loading || animating}"
+              >
+                Rechercher
+              </button>
+              <button
+                type="button"
+                class="secondary reset"
+                @click="resetStations"
+              >
+                &times;
+              </button>
+            </div>
+            <label for="switch" style="margin-bottom: 1rem">
+              <input
+                type="checkbox"
+                id="switch"
+                name="switch"
+                role="switch"
+                v-model="showAcpm"
+              />
+              Afficher l'arbre couvrant
             </label>
-            <label for="end">
-              Arrivée
-              <select id="end" v-model="end" :disabled="start === -1 || loading || animating">
-                <option v-for="station in stations.filter((station) => start !== -1 && station.num + 1 !== start + 1)"
-                  :value="station.num">
-                  {{ station.nom }} (Ligne {{ station.ligne }})
-                </option>
-              </select>
-            </label>
-          </div>
-    
-          <div class="searchAndReset">
-            <button type="button" @click="search" :aria-busy="loading || animating"
-              :class="{secondary: loading || animating}">Rechercher</button>
-            <button type="button" class="secondary reset" @click="resetStations">&times;</button>
-          </div>
-          <label for="switch" style="margin-bottom: 1rem;">
-            <input type="checkbox" id="switch" name="switch" role="switch" v-model="showAcpm">
-            Afficher l'arbre couvrant
-          </label>
-        </form>
-        <div v-if="this.path.length > 0 && !loading" class="route">
-          <div class="route-card time">
-            <div>Temps estimé</div><strong>{{ timeString }}</strong>
-            <div class="icon-clock">
-              <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
-                xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="-1063 937 256 256"
-                style="enable-background:new -1063 937 256 256;" xml:space="preserve">
-                <g>
-                  <path class="st0" d="M-935,965.4c-54.9,0-99.5,44.6-99.5,99.5s44.6,99.5,99.5,99.5c54.3,0,98.9-44.6,99.5-99.5
+          </form>
+          <div v-if="this.path.length > 0 && !loading" class="route">
+            <div class="route-card time">
+              <div>Temps estimé</div>
+              <strong>{{ timeString }}</strong>
+              <div class="icon-clock">
+                <svg
+                  version="1.1"
+                  id="Layer_1"
+                  xmlns="http://www.w3.org/2000/svg"
+                  xmlns:xlink="http://www.w3.org/1999/xlink"
+                  x="0px"
+                  y="0px"
+                  viewBox="-1063 937 256 256"
+                  style="enable-background: new -1063 937 256 256"
+                  xml:space="preserve"
+                >
+                  <g>
+                    <path
+                      class="st0"
+                      d="M-935,965.4c-54.9,0-99.5,44.6-99.5,99.5s44.6,99.5,99.5,99.5c54.3,0,98.9-44.6,99.5-99.5
                     C-835.5,1010-880.1,965.4-935,965.4z M-872.4,1048.6c-0.8,2.6-2.6,4.6-5.1,5.9l-56.7,27.1c-1.5,0.8-3.3,1.2-4.8,1.2
                     c-1.4,0-2.9-0.4-4.6-1.2c-3.3-1.8-5.4-5.3-5.4-9v-67.9c0-6,5-9.6,9.8-9.6c2.5,0,4.6,0.8,6.4,2.3l0.1,0.1c1.8,1.8,2.8,4.4,2.8,7.2
-                    v51.9l43.9-19.6c5.6-2.8,10.3-0.2,12.6,3.6l0.1,0.1C-871.9,1043.2-871.6,1046.1-872.4,1048.6z" />
-                  <path
-                    d="M-935,941.1c-68.4,0-124,55.5-124,123.8c0,68.4,55.6,124,124,124s124-55.6,124-124C-811.2,996.6-866.8,941.1-935,941.1z
-                    M-935,1164.4c-54.9,0-99.5-44.6-99.5-99.5s44.6-99.5,99.5-99.5s99.5,44.6,99.5,99.5C-836.1,1119.8-880.7,1164.4-935,1164.4z" />
-                  <path d="M-873.2,1040.7c-2.3-3.8-7.1-6.4-12.6-3.6l-43.9,19.6v-51.9c0-2.8-1-5.3-2.8-7.2l-0.1-0.1c-1.8-1.6-3.9-2.3-6.4-2.3
+                    v51.9l43.9-19.6c5.6-2.8,10.3-0.2,12.6,3.6l0.1,0.1C-871.9,1043.2-871.6,1046.1-872.4,1048.6z"
+                    />
+                    <path
+                      d="M-935,941.1c-68.4,0-124,55.5-124,123.8c0,68.4,55.6,124,124,124s124-55.6,124-124C-811.2,996.6-866.8,941.1-935,941.1z
+                    M-935,1164.4c-54.9,0-99.5-44.6-99.5-99.5s44.6-99.5,99.5-99.5s99.5,44.6,99.5,99.5C-836.1,1119.8-880.7,1164.4-935,1164.4z"
+                    />
+                    <path
+                      d="M-873.2,1040.7c-2.3-3.8-7.1-6.4-12.6-3.6l-43.9,19.6v-51.9c0-2.8-1-5.3-2.8-7.2l-0.1-0.1c-1.8-1.6-3.9-2.3-6.4-2.3
                     c-4.8,0-9.8,3.6-9.8,9.6v67.9c0,3.7,2.1,7.2,5.4,9c1.7,0.8,3.2,1.2,4.6,1.2c1.5,0,3.2-0.5,4.8-1.2l56.7-27.1
-                    c2.5-1.3,4.3-3.4,5.1-5.9C-871.6,1046.1-871.9,1043.2-873.2,1040.7L-873.2,1040.7z" />
-                </g>
-              </svg>
-            </div>
-          </div>
-          <div v-for="ligne in stationsByLignesFromPath" :key="ligne.ligne">
-            <div v-if="ligne.arretsTotaux > 1">
-              <div class="route-card ligne">
-                <div>Ligne {{ ligne.ligne }}</div>
-                <strong>{{ ligne.arretsTotaux }} arrêts</strong>
-                <div class="icon-ligne">
-                  <img :src="`/icons/${ligne.ligne}.png`" />
-                </div>
+                    c2.5-1.3,4.3-3.4,5.1-5.9C-871.6,1046.1-871.9,1043.2-873.2,1040.7L-873.2,1040.7z"
+                    />
+                  </g>
+                </svg>
               </div>
-              <div style="margin-top: 10px">
-                <div v-for="(rt, rtIndex) in ligne.routes" :key="rt.destination" style="padding: 0 20px;">
-                  <div v-if="rtIndex > 0" style="margin-top: .5rem; margin-bottom: .5rem">Changement de direction</div>
-                  Direction <strong>{{ rt.destination }}</strong>
-                  <ul style="margin-bottom: 0">
-                    <li v-if="rtIndex > 0">
-                      {{ ligne.routes[rtIndex - 1].stations[ligne.routes[rtIndex - 1].stations.length - 1].nom }}
-                    </li>
-                  </ul>
-                  <ul v-if="rt.stations.length < 5" style="margin-bottom: 0">
-                    <li v-for="station in rt.stations" :key="station.num">
-                      {{ station.nom }}
-                    </li>
-                  </ul>
-                  <div v-else>
+            </div>
+            <div v-for="ligne in stationsByLignesFromPath" :key="ligne.ligne">
+              <div v-if="ligne.arretsTotaux > 1">
+                <div class="route-card ligne">
+                  <div>Ligne {{ ligne.ligne }}</div>
+                  <strong>{{ ligne.arretsTotaux }} arrêts</strong>
+                  <div class="icon-ligne">
+                    <img :src="`/icons/${ligne.ligne}.png`" />
+                  </div>
+                </div>
+                <div style="margin-top: 10px">
+                  <div
+                    v-for="(rt, rtIndex) in ligne.routes"
+                    :key="rt.destination"
+                    style="padding: 0 20px"
+                  >
+                    <div
+                      v-if="rtIndex > 0"
+                      style="margin-top: 0.5rem; margin-bottom: 0.5rem"
+                    >
+                      Changement de direction
+                    </div>
+                    Direction <strong>{{ rt.destination }}</strong>
                     <ul style="margin-bottom: 0">
-                      <li v-for="station in rt.stations.slice(0, 1)" :key="station.num">
+                      <li v-if="rtIndex > 0">
+                        {{ ligne.routes[rtIndex -
+                        1].stations[ligne.routes[rtIndex - 1].stations.length -
+                        1].nom }}
+                      </li>
+                    </ul>
+                    <ul v-if="rt.stations.length < 5" style="margin-bottom: 0">
+                      <li v-for="station in rt.stations" :key="station.num">
                         {{ station.nom }}
                       </li>
                     </ul>
-                    <details>
-                      <summary>{{ rt.stations.length - 2 }} stations</summary>
+                    <div v-else>
                       <ul style="margin-bottom: 0">
-                        <li v-for="station in rt.stations.slice(1, rt.stations.length - 1)" :key="station.num">
+                        <li
+                          v-for="station in rt.stations.slice(0, 1)"
+                          :key="station.num"
+                        >
                           {{ station.nom }}
                         </li>
                       </ul>
-                    </details>
-                    <ul style="margin-bottom: 0">
-                      <li v-for="station in rt.stations.slice(-1)" :key="station.num">
-                        {{ station.nom }}
-                      </li>
-                    </ul>
+                      <details>
+                        <summary>{{ rt.stations.length - 2 }} stations</summary>
+                        <ul style="margin-bottom: 0">
+                          <li
+                            v-for="station in rt.stations.slice(1, rt.stations.length - 1)"
+                            :key="station.num"
+                          >
+                            {{ station.nom }}
+                          </li>
+                        </ul>
+                      </details>
+                      <ul style="margin-bottom: 0">
+                        <li
+                          v-for="station in rt.stations.slice(-1)"
+                          :key="station.num"
+                        >
+                          {{ station.nom }}
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div v-else>
-              <div class="route-card ligne">
-                <div>Correspondance</div>
-                <strong>{{ ligne.routes[0].stations[0].nom }}</strong>
-                <div class="icon-ligne">
-                  <img :src="`/icons/${ligne.ligne}.png`" />
+              <div v-else>
+                <div class="route-card ligne">
+                  <div>Correspondance</div>
+                  <strong>{{ ligne.routes[0].stations[0].nom }}</strong>
+                  <div class="icon-ligne">
+                    <img :src="`/icons/${ligne.ligne}.png`" />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        <div class="map" :class="{ opacity: this.path.length > 0 }">
+          <img :src="imageUrl" />
+          <svg width="987" height="952" viewBox="18 0 950 952">
+            <g>
+              <path
+                v-for="ligne in verticesUniqueLignesArray"
+                class="pathVertices"
+                :ref="`pathVertices-${ligne}`"
+                :stroke="getLigneColor(ligne)"
+                :style="{ '--stroke-length': ligneEdgesAnimation[ligne]?.strokeLength, 'animation': ligneEdgesAnimation[ligne]?.animation }"
+                :d="ligneEdgesAnimation[ligne]?.pathVertices"
+              />
+            </g>
+            <g>
+              <circle
+                v-for="station in stations"
+                :key="station.num"
+                style="cursor: pointer"
+                :cx="station.posX"
+                :cy="station.posY"
+                r="3"
+                :class="{ 'map-pulse-animation': station.num === start || station.num === end }"
+                :stroke="station.num === start || station.num === end ? 'orange' : 'black'"
+                :stroke-width="station.num === start || station.num === end ? 3 : 1"
+                :fill="station.num === start || station.num === end ? 'orange' : 'white'"
+                @click="selectStation(station)"
+              />
+            </g>
+          </svg>
+        </div>
       </div>
-      <div class="map" :class="{ opacity: this.path.length > 0 }">
-        <img :src="imageUrl" />
-        <svg width="987" height="952" viewBox="18 0 950 952">
-          <g>
-            <path v-for="ligne in verticesUniqueLignesArray" class="pathVertices" :ref="`pathVertices-${ligne}`"
-              :stroke="getLigneColor(ligne)"
-              :style="{ '--stroke-length': ligneEdgesAnimation[ligne]?.strokeLength, 'animation': ligneEdgesAnimation[ligne]?.animation }"
-              :d="ligneEdgesAnimation[ligne]?.pathVertices" />
-          </g>
-          <g>
-            <circle v-for="station in stations" :key="station.num" style="cursor: pointer" :cx="station.posX"
-              :cy="station.posY" r="3" :class="{ 'map-pulse-animation': station.num === start || station.num === end }"
-              :stroke="station.num === start || station.num === end ? 'orange' : 'black'"
-              :stroke-width="station.num === start || station.num === end ? 3 : 1"
-              :fill="station.num === start || station.num === end ? 'orange' : 'white'"
-              @click="selectStation(station)" />
-          </g>
-        </svg>
-      </div>
-    </div>
-  </main>
-</body>
-<script>
-  const {createApp} = Vue;
+    </main>
+  </body>
+  <script>
+    const { createApp } = Vue;
 
-  function flatten(ary) {
-    let ret = [];
-    for (var i = 0; i < ary.length; i++) {
-      if (Array.isArray(ary[i])) {
-        ret = ret.concat(flatten(ary[i]));
-      } else {
-        ret.push(ary[i]);
-      }
-    }
-    return ret;
-  }
-
-  createApp({
-    data() {
-      return {
-        stations: [],
-        start: -1,
-        end: -1,
-        path: [],
-        time: null,
-        loading: false,
-        animating: false,
-        ligneEdgesAnimation: {},
-        showAcpm: false,
-      };
-    },
-    mounted() {
-      this.getStations();
-    },
-    methods: {
-      resetStations() {
-        this.start = -1;
-        this.end = -1;
-        this.path = [];
-        this.time = null;
-      },
-      selectStation(station) {
-        if (this.loading || this.animating) return;
-        if (this.start === -1) {
-          this.start = station.num;
-        } else if (this.end === -1) {
-          this.end = station.num;
-          this.search();
+    function flatten(ary) {
+      let ret = [];
+      for (var i = 0; i < ary.length; i++) {
+        if (Array.isArray(ary[i])) {
+          ret = ret.concat(flatten(ary[i]));
         } else {
-          this.resetStations();
-          this.start = station.num;
+          ret.push(ary[i]);
         }
-      },
-      async getStations() {
-        const response = await fetch("api/stations");
-        const data = await response.json();
-        this.stations = data;
-      },
-      parseDestinationArrayToString(station) {
-        return 'Direction ' + station.destination.map((destination) => destination.nom).join(' ou ');
-      },
-      async search() {
-        this.loading = true;
-        try {
-          this.path = [];
-          const response = await fetch("api/path/" + this.start + "/" + this.end);
-          const data = await response.json();
-          if (response.status !== 200) {
-            throw new Error(data.message);
-          }
-          this.time = data.time;
-
-          let path = data.path;
-          let lastLigne = null;
-          let lastBranchement = null;
-          let destination = null;
-          for (let vertex in path) {
-            if (lastLigne !== path[vertex].ligne || lastBranchement !== path[vertex].branchement) {
-              console.log("regenerate for " + path[vertex].ligne + " " + path[vertex].nom + " -> " + (lastLigne !== path[vertex].ligne) + " " + (lastBranchement !== path[vertex].branchement));
-
-              lastLigne = path[vertex].ligne;
-              lastBranchement = path[vertex].branchement;
-              let stationsForLigne = path.filter((station) => station.ligne === path[vertex].ligne && station.branchement === path[vertex].branchement);
-              destination = this.getTerminusFromTwoStations(stationsForLigne[0].num, stationsForLigne[stationsForLigne.length - 1].num);
-              if (destination) {
-                destination = flatten(destination);
-              } else {
-                destination = [this.stations.find((station) => station.ligne === path[vertex].ligne && station.branchement === 0 && station.terminus == true).num];
-              }
-              destination = destination.filter((item, index) => destination.indexOf(item) === index);
-              destination = destination.map((station) => this.stations.find((station2) => station2.num === station));
-            }
-            path[vertex].destination = destination;
-          }
-
-          this.path = path;
-          this.pathAnimation();
-        } catch (e) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Erreur',
-            text: e.message,
-          })
-          console.error(e);
-          this.resetStations();
-        }
-        this.loading = false;
-      },
-      formatTime(time) {
-        const h = Math.floor(time / 3600).toString().padStart(2, '0'),
-          m = Math.floor(time % 3600 / 60).toString().padStart(2, '0'),
-          s = Math.floor(time % 60).toString().padStart(2, '0');
-
-        return `${h}:${m}:${s}`;
-      },
-      getTimeAdded(station) {
-        if (station.num == this.start) return;
-        for (let stn in this.path) {
-          for (let adj of this.path[stn].adjacentStations) {
-            if (adj.num === station.num) {
-              return adj.correspondance;
-            }
-          }
-        }
-      },
-      branchementTransitionAllowed(b1, b2) {
-        if (b1 === b2) return true;
-        if (b1 === 1 && b2 === 0) return true;
-        if (b1 === 2 && b2 === 0) return true;
-        if (b1 === 0 && b2 === 1) return true;
-        if (b1 === 0 && b2 === 2) return true;
-        return false;
-      },
-      getTerminusFromTwoStations(stationNum, targetNum, visitedTarget = false, alreadyVisited = [], origineBranchement = null) {
-        station = this.stations.find((station) => station.num === stationNum);
-        target = this.stations.find((station) => station.num === targetNum);
-
-        if (stationNum === targetNum) {
-          visitedTarget = true;
-        }
-
-        if (origineBranchement === null) {
-          origineBranchement = station.branchement;
-        }
-
-        if (visitedTarget && station.terminus == true) {
-          return [station.num];
-        }
-
-        let adj = station.adjacentStations.filter(adj => !alreadyVisited.includes(adj.num) && adj.ligne === station.ligne && this.branchementTransitionAllowed(origineBranchement, adj.branchement));
-
-        if (adj.length === 0) {
-          return null;
-        } else if (adj.length === 1) {
-          return this.getTerminusFromTwoStations(adj[0].num, targetNum, visitedTarget, [...alreadyVisited, station.num], origineBranchement);
-        } else if (adj.length === 2) {
-          let terminus1 = this.getTerminusFromTwoStations(adj[0].num, targetNum, visitedTarget, [...alreadyVisited, station.num], origineBranchement);
-          let terminus2 = this.getTerminusFromTwoStations(adj[1].num, targetNum, visitedTarget, [...alreadyVisited, station.num], origineBranchement);
-
-          return [...(terminus1 || []), ...(terminus2 || [])]
-        }
-      },
-      getPathVerticesForLigne(ligne) {
-        let ligneVertices = this.vertices.filter((vertex) => vertex.ligne === ligne);
-        return ligneVertices.length > 0 ? `M${ligneVertices[0].posX},${ligneVertices[0].posY} ` + ligneVertices
-          .slice(1)
-          .map((vert, i) => {
-            return `L${vert.posX},${vert.posY}`;
-          })
-          .join(' ') : ``;
-      },
-      getLengthOfLigne(ligne) {
-        let ligneVertices = this.vertices.filter((vertex) => vertex.ligne === ligne);
-        let length = 0;
-        for (let i = 0; i < ligneVertices.length - 1; i++) {
-          length += Math.sqrt(Math.pow(ligneVertices[i].posX - ligneVertices[i + 1].posX, 2) + Math.pow(ligneVertices[i].posY - ligneVertices[i + 1].posY, 2));
-        }
-        return length;
-      },
-      getLigneColor(ligne) {
-        return this.vertices.filter((v) => v.ligne === ligne)[0].color;
-      },
-      pathAnimation() {
-        this.ligneEdgesAnimation = {};
-        this.$nextTick(async () => {
-          for (let ligne of this.verticesUniqueLignesArray) {
-            this.animating = true;
-            const pathVertices = this.getPathVerticesForLigne(ligne);
-            const pathLength = this.getLengthOfLigne(ligne);
-            const duration = pathLength / 100 * 0.4;
-
-            this.ligneEdgesAnimation[ligne] = {
-              pathVertices,
-              strokeLength: pathLength,
-              animation: `dashVert ${duration}s ease forwards`,
-            };
-
-            await new Promise((resolve, reject) => {
-              setTimeout(() => {
-                resolve();
-              }, duration * 1000);
-            });
-            this.ligneEdgesAnimation[ligne].animation = ``
-            this.animating = false;
-          }
-        });
       }
-    },
-    computed: {
-      imageUrl() {
-        return this.showAcpm ? '/api/kruskal' : '/api/canvas';
-      },
-      timeString() {
-        return this.formatTime(this.time);
-      },
-      vertices() {
-        // map the path to the vertices
-        return this.path.map((station) => {
-          return {
-            num: station.num,
-            nom: station.nom,
-            posX: station.posX,
-            posY: station.posY,
-            color: station.couleurLigne,
-            ligne: station.ligne,
-          };
-        });
-      },
-      verticesUniqueLignesArray() {
-        return this.vertices.map((vert) => vert.ligne).filter((value, index, self) => self.indexOf(value) === index);
-      },
-      stationsByLignesFromPath() {
-        let stationsByLignes = [];
-        for (let station of this.path) {
-          let ligneStations = stationsByLignes.find((l) => l.ligne === station.ligne);
-          if (!ligneStations) {
-            stationsByLignes.push({
-              ligne: station.ligne,
-              routes: [],
-            });
-          }
-
-          let ligneRoutes = stationsByLignes.find((l) => l.ligne === station.ligne).routes;
-          let formattedDestination = station.destination.map((dest) => dest.nom).join(" ou ");
-
-          let route = ligneRoutes.find((r) => r.destination === formattedDestination);
-          if (route) {
-            route.stations.push(station);
-          } else {
-            ligneRoutes.push({
-              destination: formattedDestination,
-              stations: [station],
-            });
-          }
-        }
-        for (let ligne of stationsByLignes) {
-          ligne.arretsTotaux = ligne.routes.reduce((acc, route) => acc + route.stations.length, 0);
-          if (ligne.routes.length === 2) {
-            let unsureDest = ligne.routes.findIndex((r) => r.destination.includes(" ou "));
-            if (unsureDest === -1) continue;
-            ligne.routes[1 - unsureDest].stations = [...ligne.routes[unsureDest].stations, ...ligne.routes[1 - unsureDest].stations]
-            ligne.routes.splice(unsureDest, 1);
-          }
-        }
-        return stationsByLignes;
-      },
+      return ret;
     }
-  }).mount("main");
-</script>
 
+    createApp({
+      data() {
+        return {
+          stations: [],
+          start: -1,
+          end: -1,
+          path: [],
+          time: null,
+          loading: false,
+          animating: false,
+          ligneEdgesAnimation: {},
+          showAcpm: false
+        };
+      },
+      mounted() {
+        this.getStations();
+      },
+      methods: {
+        resetStations() {
+          this.start = -1;
+          this.end = -1;
+          this.path = [];
+          this.time = null;
+        },
+        selectStation(station) {
+          if (this.loading || this.animating) return;
+          if (this.start === -1) {
+            this.start = station.num;
+          } else if (this.end === -1) {
+            this.end = station.num;
+            this.search();
+          } else {
+            this.resetStations();
+            this.start = station.num;
+          }
+        },
+        async getStations() {
+          const response = await fetch('api/stations');
+          const data = await response.json();
+          this.stations = data;
+        },
+        parseDestinationArrayToString(station) {
+          return (
+            'Direction ' +
+            station.destination.map(destination => destination.nom).join(' ou ')
+          );
+        },
+        async search() {
+          this.loading = true;
+          try {
+            this.path = [];
+            const response = await fetch(
+              'api/path/' + this.start + '/' + this.end
+            );
+            const data = await response.json();
+            if (response.status !== 200) {
+              throw new Error(data.message);
+            }
+            this.time = data.time;
+
+            let path = data.path;
+            let lastLigne = null;
+            let lastBranchement = null;
+            let destination = null;
+            for (let vertex in path) {
+              if (
+                lastLigne !== path[vertex].ligne.nom ||
+                lastBranchement !== path[vertex].branchement
+              ) {
+                console.log(
+                  'regenerate for ' +
+                    path[vertex].ligne.nom +
+                    ' ' +
+                    path[vertex].nom +
+                    ' -> ' +
+                    (lastLigne !== path[vertex].ligne.nom) +
+                    ' ' +
+                    (lastBranchement !== path[vertex].branchement)
+                );
+
+                lastLigne = path[vertex].ligne.nom;
+                lastBranchement = path[vertex].branchement;
+                let stationsForLigne = path.filter(
+                  station =>
+                    station.ligne.nom === path[vertex].ligne.nom &&
+                    station.branchement === path[vertex].branchement
+                );
+                destination = this.getTerminusFromTwoStations(
+                  stationsForLigne[0].num,
+                  stationsForLigne[stationsForLigne.length - 1].num
+                );
+                if (destination) {
+                  destination = flatten(destination);
+                } else {
+                  destination = [
+                    this.stations.find(
+                      station =>
+                        station.ligne.nom === path[vertex].ligne.nom &&
+                        station.branchement === 0 &&
+                        station.terminus == true
+                    ).num
+                  ];
+                }
+                destination = destination.filter(
+                  (item, index) => destination.indexOf(item) === index
+                );
+                destination = destination.map(station =>
+                  this.stations.find(station2 => station2.num === station)
+                );
+              }
+              path[vertex].destination = destination;
+            }
+
+            this.path = path;
+            this.pathAnimation();
+          } catch (e) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Erreur',
+              text: e.message
+            });
+            console.error(e);
+            this.resetStations();
+          }
+          this.loading = false;
+        },
+        formatTime(time) {
+          const h = Math.floor(time / 3600)
+              .toString()
+              .padStart(2, '0'),
+            m = Math.floor((time % 3600) / 60)
+              .toString()
+              .padStart(2, '0'),
+            s = Math.floor(time % 60)
+              .toString()
+              .padStart(2, '0');
+
+          return `${h}:${m}:${s}`;
+        },
+        getTimeAdded(station) {
+          if (station.num == this.start) return;
+          for (let stn in this.path) {
+            for (let adj of this.path[stn].adjacentStations) {
+              if (adj.station.num === station.num) {
+                return adj.time;
+              }
+            }
+          }
+        },
+        branchementTransitionAllowed(b1, b2) {
+          if (b1 === b2) return true;
+          if (b1 === 1 && b2 === 0) return true;
+          if (b1 === 2 && b2 === 0) return true;
+          if (b1 === 0 && b2 === 1) return true;
+          if (b1 === 0 && b2 === 2) return true;
+          return false;
+        },
+        getTerminusFromTwoStations(
+          stationNum,
+          targetNum,
+          visitedTarget = false,
+          alreadyVisited = [],
+          origineBranchement = null
+        ) {
+          station = this.stations.find(station => station.num === stationNum);
+          target = this.stations.find(station => station.num === targetNum);
+
+          if (stationNum === targetNum) {
+            visitedTarget = true;
+          }
+
+          if (origineBranchement === null) {
+            origineBranchement = station.branchement;
+          }
+
+          if (visitedTarget && station.terminus == true) {
+            return [station.num];
+          }
+
+          let adj = station.adjacentStations.filter(
+            adj =>
+              !alreadyVisited.includes(adj.num) &&
+              adj.station.ligne.nom === station.ligne.nom &&
+              this.branchementTransitionAllowed(
+                origineBranchement,
+                adj.branchement
+              )
+          );
+
+          if (adj.length === 0) {
+            return null;
+          } else if (adj.length === 1) {
+            return this.getTerminusFromTwoStations(
+              adj[0].num,
+              targetNum,
+              visitedTarget,
+              [...alreadyVisited, station.num],
+              origineBranchement
+            );
+          } else if (adj.length === 2) {
+            let terminus1 = this.getTerminusFromTwoStations(
+              adj[0].num,
+              targetNum,
+              visitedTarget,
+              [...alreadyVisited, station.num],
+              origineBranchement
+            );
+            let terminus2 = this.getTerminusFromTwoStations(
+              adj[1].num,
+              targetNum,
+              visitedTarget,
+              [...alreadyVisited, station.num],
+              origineBranchement
+            );
+
+            return [...(terminus1 || []), ...(terminus2 || [])];
+          }
+        },
+        getPathVerticesForLigne(ligne) {
+          let ligneVertices = this.vertices.filter(
+            vertex => vertex.ligne === ligne
+          );
+          return ligneVertices.length > 0
+            ? `M${ligneVertices[0].posX},${ligneVertices[0].posY} ` +
+                ligneVertices
+                  .slice(1)
+                  .map((vert, i) => {
+                    return `L${vert.posX},${vert.posY}`;
+                  })
+                  .join(' ')
+            : ``;
+        },
+        getLengthOfLigne(ligne) {
+          let ligneVertices = this.vertices.filter(
+            vertex => vertex.ligne === ligne
+          );
+          let length = 0;
+          for (let i = 0; i < ligneVertices.length - 1; i++) {
+            length += Math.sqrt(
+              Math.pow(ligneVertices[i].posX - ligneVertices[i + 1].posX, 2) +
+                Math.pow(ligneVertices[i].posY - ligneVertices[i + 1].posY, 2)
+            );
+          }
+          return length;
+        },
+        getLigneColor(ligne) {
+          return this.vertices.filter(v => v.ligne === ligne)[0].color;
+        },
+        pathAnimation() {
+          this.ligneEdgesAnimation = {};
+          this.$nextTick(async () => {
+            for (let ligne of this.verticesUniqueLignesArray) {
+              this.animating = true;
+              const pathVertices = this.getPathVerticesForLigne(ligne);
+              const pathLength = this.getLengthOfLigne(ligne);
+              const duration = (pathLength / 100) * 0.4;
+
+              this.ligneEdgesAnimation[ligne] = {
+                pathVertices,
+                strokeLength: pathLength,
+                animation: `dashVert ${duration}s ease forwards`
+              };
+
+              await new Promise((resolve, reject) => {
+                setTimeout(() => {
+                  resolve();
+                }, duration * 1000);
+              });
+              this.ligneEdgesAnimation[ligne].animation = ``;
+              this.animating = false;
+            }
+          });
+        }
+      },
+      computed: {
+        imageUrl() {
+          return this.showAcpm ? '/api/kruskal' : '/api/canvas';
+        },
+        timeString() {
+          return this.formatTime(this.time);
+        },
+        vertices() {
+          // map the path to the vertices
+          return this.path.map(station => {
+            return {
+              num: station.num,
+              nom: station.nom,
+              posX: station.posX,
+              posY: station.posY,
+              color: station.ligne.couleur,
+              ligne: station.ligne.nom
+            };
+          });
+        },
+        verticesUniqueLignesArray() {
+          return this.vertices
+            .map(vert => vert.ligne)
+            .filter((value, index, self) => self.indexOf(value) === index);
+        },
+        stationsByLignesFromPath() {
+          let stationsByLignes = [];
+          for (let station of this.path) {
+            let ligneStations = stationsByLignes.find(
+              l => l.ligne === station.ligne.nom
+            );
+            if (!ligneStations) {
+              stationsByLignes.push({
+                ligne: station.ligne.nom,
+                routes: []
+              });
+            }
+
+            let ligneRoutes = stationsByLignes.find(
+              l => l.ligne === station.ligne.nom
+            ).routes;
+            let formattedDestination = station.destination
+              .map(dest => dest.nom)
+              .join(' ou ');
+
+            let route = ligneRoutes.find(
+              r => r.destination === formattedDestination
+            );
+            if (route) {
+              route.stations.push(station);
+            } else {
+              ligneRoutes.push({
+                destination: formattedDestination,
+                stations: [station]
+              });
+            }
+          }
+          for (let ligne of stationsByLignes) {
+            ligne.arretsTotaux = ligne.routes.reduce(
+              (acc, route) => acc + route.stations.length,
+              0
+            );
+            if (ligne.routes.length === 2) {
+              let unsureDest = ligne.routes.findIndex(r =>
+                r.destination.includes(' ou ')
+              );
+              if (unsureDest === -1) continue;
+              ligne.routes[1 - unsureDest].stations = [
+                ...ligne.routes[unsureDest].stations,
+                ...ligne.routes[1 - unsureDest].stations
+              ];
+              ligne.routes.splice(unsureDest, 1);
+            }
+          }
+          return stationsByLignes;
+        }
+      }
+    }).mount('main');
+  </script>
 </html>

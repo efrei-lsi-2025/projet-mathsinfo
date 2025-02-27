@@ -6,7 +6,7 @@
   },
   "scripts": {
     "generate-index": "find ./src/generated -name '*.ts' ! -name 'index.ts' -print | sed 's|^\\./src/generated/|export * from '\\''./|' | sed 's|.ts$|'\\'';|' > ./src/generated/index.ts",
-    "clean": "rimraf src/generated && mkdir -p src/generated",
+    "clean": "rimraf src/generated && mkdirp src/generated",
     "generate": "npm run clean && npx protoc -I=protos protos/*.proto --ts_out=src/generated --ts_opt server_grpc1,optimize_code_size && npm run generate-index"
   },
   "devDependencies": {
@@ -14,7 +14,8 @@
     "@protobuf-ts/protoc": "^2.9.4",
     "@protobuf-ts/runtime": "^2.9.4",
     "@protobuf-ts/runtime-rpc": "^2.9.4",
-    "rimraf": "^6.0.1"
+    "rimraf": "^6.0.1",
+    "mkdirp": "^3.0.1"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.12.6",

@@ -39,6 +39,7 @@ helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dash
 ```
 
 kubectl create ns metroboulotdodo
+kubectl config set-context --current --namespace=metroboulotdodo
 kubectl apply -f k8s/secrets/db.yaml
 kubectl apply -f k8s/microservices -R
 

@@ -1,34 +1,21 @@
 import {
   Empty,
   IKruskalService,
-  Image,
+  Intergares,
   sendUnaryData,
   ServerUnaryCall
 } from '@metro-boulot-dodo/proto';
-import { generateImage, generateMST, getFullTree } from './tree';
+import { generateMST } from './tree';
 
 export const kruskalService: IKruskalService = {
   getMinimumSpanningTree: async (
-    call: ServerUnaryCall<Empty, Image>,
-    callback: sendUnaryData<Image>
+    call: ServerUnaryCall<Empty, Intergares>,
+    callback: sendUnaryData<Intergares>
   ) => {
     const mst = await generateMST();
-    const imageBytes = await generateImage(mst);
 
     callback(null, {
-      data: imageBytes
-    });
-  },
-
-  getFullTree: async (
-    call: ServerUnaryCall<Empty, Image>,
-    callback: sendUnaryData<Image>
-  ) => {
-    const fullTree = await getFullTree();
-    const imageBytes = await generateImage(fullTree);
-
-    callback(null, {
-      data: imageBytes
+      intergares: mst
     });
   }
 };

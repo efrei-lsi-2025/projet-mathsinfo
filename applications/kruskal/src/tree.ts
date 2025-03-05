@@ -44,15 +44,3 @@ export const generateMST = async () => {
 
   return arbre;
 };
-
-export const getFullTree = async () => {
-  return (await clients.dataService.getIntergares(Empty).response).intergares;
-};
-
-export const generateImage = async (intergares: Intergare[]) => {
-  return (
-    await clients.canvasService.getCanvas({
-      intergares
-    }).response
-  ).data;
-};

@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: data
+  labels:
+    app: data
+spec:
+  ports:
+    - port: 3000
+  selector:
+    app: data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data
+  labels:
+    app: data
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: data
+  template:
+    metadata:
+      labels:
+        app: data
+    spec:
+      initContainers:
+        - name: wait-for-database
+          image: busybox
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z -v -w30 db 5432; do echo waiting for database; sleep 5; done",
+            ]
+      containers:
+        - name: data
+          image: ghcr.io/efrei-lsi-2025/metroboulotdodo-back:k8s
+          ports:
+            - containerPort: 3000
+          command: ["npm"]
+          args: ["run", "start:data"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db
+                  key: POSTGRES_URL
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "812Mi"
+              cpu: "500m"

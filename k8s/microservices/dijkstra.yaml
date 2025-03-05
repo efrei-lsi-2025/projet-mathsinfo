@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dijkstra
+  labels:
+    app: dijkstra
+spec:
+  ports:
+    - port: 3000
+  selector:
+    app: dijkstra
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dijkstra
+  labels:
+    app: dijkstra
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dijkstra
+  template:
+    metadata:
+      labels:
+        app: dijkstra
+    spec:
+      initContainers:
+        - name: wait-for-data-service
+          image: busybox
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z -v -w30 data 3000; do echo waiting for data service; sleep 5; done",
+            ]
+      containers:
+        - name: dijkstra
+          image: ghcr.io/efrei-lsi-2025/metroboulotdodo-back:k8s
+          ports:
+            - containerPort: 3000
+          command: ["npm"]
+          args: ["run", "start:dijkstra"]
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "812Mi"
+              cpu: "500m"

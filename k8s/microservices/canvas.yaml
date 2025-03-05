@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: canvas
+  labels:
+    app: canvas
+spec:
+  ports:
+    - port: 3000
+  selector:
+    app: canvas
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: canvas
+  labels:
+    app: canvas
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: canvas
+  template:
+    metadata:
+      labels:
+        app: canvas
+    spec:
+      initContainers:
+        - name: wait-for-data-service
+          image: busybox
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z -v -w30 data 3000; do echo waiting for data service; sleep 5; done",
+            ]
+      containers:
+        - name: canvas
+          image: ghcr.io/efrei-lsi-2025/metroboulotdodo-back:k8s
+          command: ["npm"]
+          args: ["run", "start:canvas"]
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "750m"

@@ -90,6 +90,5 @@ service DijkstraService {
 }
 
 service KruskalService {
-    rpc GetMinimumSpanningTree (Empty) returns (Image);
-    rpc GetFullTree (Empty) returns (Image);
+    rpc GetMinimumSpanningTree (Empty) returns (Intergares);
 }

@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kruskal
+  labels:
+    app: kruskal
+spec:
+  ports:
+    - port: 3000
+  selector:
+    app: kruskal
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kruskal
+  labels:
+    app: kruskal
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kruskal
+  template:
+    metadata:
+      labels:
+        app: kruskal
+    spec:
+      initContainers:
+        - name: wait-for-data-service
+          image: busybox
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z -v -w30 data 3000; do echo waiting for data service; sleep 5; done",
+            ]
+      containers:
+        - name: kruskal
+          image: ghcr.io/efrei-lsi-2025/metroboulotdodo-back:k8s
+          ports:
+            - containerPort: 3000
+          command: ["npm"]
+          args: ["run", "start:kruskal"]
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "812Mi"
+              cpu: "500m"

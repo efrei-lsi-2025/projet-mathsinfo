@@ -10,16 +10,27 @@ fastify.get('/api/stations', async () => {
 });
 
 fastify.get('/api/canvas', async (req, reply) => {
-  const buffer = (await clients.kruskalService.getFullTree(Empty).response)
-    .data;
-  reply.type('image/png').send(buffer);
+  const intergares = (await clients.dataService.getIntergares(Empty).response)
+    .intergares;
+
+  const imageBytes = (
+    await clients.canvasService.getCanvas({ intergares }).response
+  ).data;
+
+  reply.type('image/png').send(imageBytes);
 });
 
 fastify.get('/api/kruskal', async (req, reply) => {
-  const buffer = (
+  const intergaresACPM = (
     await clients.kruskalService.getMinimumSpanningTree(Empty).response
+  ).intergares;
+
+  const imageBytes = (
+    await clients.canvasService.getCanvas({ intergares: intergaresACPM })
+      .response
   ).data;
-  reply.type('image/png').send(buffer);
+
+  reply.type('image/png').send(imageBytes);
 });
 
 fastify.get('/api/path/:start/:end', async req => {

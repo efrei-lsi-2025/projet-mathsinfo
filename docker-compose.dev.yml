@@ -2,7 +2,6 @@ services:
   postgres:
     build:
       context: ./images/db
-      dockerfile: Dockerfile
     container_name: postgres
     environment:
       POSTGRES_USER: postgres
@@ -12,9 +11,7 @@ services:
       - '5432:5432'
 
   canvas:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     entrypoint: npm run start:canvas
 
   data:
@@ -26,21 +23,15 @@ services:
       - DATABASE_URL=postgres://postgres:postgres@postgres:5432/postgres
 
   dijkstra:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     entrypoint: npm run start:dijkstra
 
   kruskal:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     entrypoint: npm run start:kruskal
 
   proxy:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     entrypoint: npm run start:proxy
     labels:
       - 'traefik.enable=true'
@@ -50,7 +41,6 @@ services:
   front:
     build:
       context: ./images/front
-      dockerfile: Dockerfile
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.front.rule=PathPrefix(`/`)'

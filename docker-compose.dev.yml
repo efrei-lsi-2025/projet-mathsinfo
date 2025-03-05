@@ -12,6 +12,8 @@ services:
 
   canvas:
     build: .
+    deploy:
+      replicas: 10
     entrypoint: npm run start:canvas
 
   data:
@@ -19,20 +21,28 @@ services:
       context: .
       dockerfile: Dockerfile
     entrypoint: npm run start:data
+    deploy:
+      replicas: 10
     environment:
       - DATABASE_URL=postgres://postgres:postgres@postgres:5432/postgres
 
   dijkstra:
     build: .
+    deploy:
+      replicas: 10
     entrypoint: npm run start:dijkstra
 
   kruskal:
     build: .
+    deploy:
+      replicas: 10
     entrypoint: npm run start:kruskal
 
   proxy:
     build: .
     entrypoint: npm run start:proxy
+    deploy:
+      replicas: 10
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.proxy.rule=PathPrefix(`/api`)'
@@ -41,6 +51,8 @@ services:
   front:
     build:
       context: ./images/front
+    deploy:
+      replicas: 10
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.front.rule=PathPrefix(`/`)'
